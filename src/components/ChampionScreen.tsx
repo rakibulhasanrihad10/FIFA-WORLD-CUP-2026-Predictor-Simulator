@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { TEAMS, getFlagUrl } from '../data/initialData';
 import KnockoutBracket from './KnockoutBracket';
 import { Trophy, Award, Medal, RotateCcw, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import ShareModal from './ShareModal';
 
 export default function ChampionScreen() {
   const { championId, runnerUpId, reset } = useTournamentStore();
 
   const champion = championId ? TEAMS.find((t) => t.id === championId) : undefined;
   const runnerUp = runnerUpId ? TEAMS.find((t) => t.id === runnerUpId) : undefined;
+
+  // Sharing state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Trigger rich confetti animation when Champion screen is loaded
   useEffect(() => {
@@ -48,7 +52,8 @@ export default function ChampionScreen() {
   }, []);
 
   return (
-    <div className="w-full flex flex-col gap-10 py-10 animate-fade-in max-w-full overflow-hidden">
+    <>
+      <div className="w-full flex flex-col gap-10 py-10 animate-fade-in max-w-full overflow-hidden">
       
       {/* CROWNING SECTION */}
       <div className="text-center flex flex-col items-center gap-4 max-w-3xl mx-auto px-4">
@@ -83,6 +88,7 @@ export default function ChampionScreen() {
                 <img 
                   src={getFlagUrl(runnerUp.id)} 
                   alt="" 
+                  crossOrigin="anonymous"
                   className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-900 select-none"
                 />
               )}
@@ -112,6 +118,7 @@ export default function ChampionScreen() {
                 <img 
                   src={getFlagUrl(champion.id)} 
                   alt="" 
+                  crossOrigin="anonymous"
                   className="w-7 h-4.5 object-cover rounded shadow-sm border border-[#fbbf24]/30 select-none"
                 />
               )}
@@ -126,10 +133,17 @@ export default function ChampionScreen() {
       <div className="flex items-center justify-center gap-4 max-w-md mx-auto px-4 flex-shrink-0">
         <button
           onClick={reset}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-xs uppercase hover:bg-slate-800 hover:text-emerald-400 hover:border-emerald-900/60 transition-all shadow-sm"
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-xs uppercase hover:bg-slate-800 hover:text-emerald-400 hover:border-emerald-900/60 transition-all shadow-sm cursor-pointer"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           Simulate Again
+        </button>
+        <button
+          onClick={() => setIsShareModalOpen(true)}
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shadow-sm cursor-pointer"
+        >
+          <Share2 className="h-3.5 w-3.5" />
+          Share Prediction
         </button>
       </div>
 
@@ -149,5 +163,14 @@ export default function ChampionScreen() {
       </div>
 
     </div>
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        championId={championId}
+        runnerUpId={runnerUpId}
+        bracketElementId="bracket-board"
+      />
+    </>
   );
 }

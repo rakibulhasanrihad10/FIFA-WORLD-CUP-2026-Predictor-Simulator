@@ -14,12 +14,15 @@ interface TournamentState {
   };
   championId?: string;
   runnerUpId?: string;
+  userName?: string;
+  userAvatar?: string;
   setStep: (step: TournamentStep) => void;
   selectWinner: (matchId: string, winnerId: string) => void;
   quickRankGroup: (groupId: string, teamIdsInOrder: string[]) => void;
   clearGroupPredictions: (groupId: string) => void;
   advanceToKnockouts: () => void;
   toggleThirdPlaceQualifier: (teamId: string) => void;
+  setBrandingDetails: (userName: string, userAvatar: string | undefined) => void;
   reset: () => void;
 }
 
@@ -156,8 +159,12 @@ export const useTournamentStore = create<TournamentState>()(
       qualifiedTeams: { winners: [], runnersUp: [], thirdPlaces: [] },
       championId: undefined,
       runnerUpId: undefined,
+      userName: undefined,
+      userAvatar: undefined,
 
       setStep: (step) => set({ step }),
+
+      setBrandingDetails: (userName, userAvatar) => set({ userName, userAvatar }),
 
       selectWinner: (matchId, winnerId) => {
         const { matches, standings, step } = get();
@@ -442,6 +449,8 @@ export const useTournamentStore = create<TournamentState>()(
           qualifiedTeams: { winners: [], runnersUp: [], thirdPlaces: [] },
           championId: undefined,
           runnerUpId: undefined,
+          userName: undefined,
+          userAvatar: undefined,
         });
       },
     }),

@@ -3,10 +3,12 @@
 import React from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
 import MatchCard from './MatchCard';
-import { Trophy, Calendar } from 'lucide-react';
+import { Trophy, Calendar, Share2 } from 'lucide-react';
+import ShareModal from './ShareModal';
 
 export default function KnockoutBracket() {
-  const { matches, selectWinner, step, setStep } = useTournamentStore();
+  const { matches, selectWinner, step, setStep, championId, runnerUpId, userName, userAvatar } = useTournamentStore();
+  const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
   // Filter matches for left and right columns
   const getMatch = (id: string) => matches.find((m) => m.id === id)!;
@@ -197,17 +199,28 @@ export default function KnockoutBracket() {
             Pick winners by clicking on teams. Predictions propagate automatically to the next round.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-[#060a08] px-4 py-2.5 rounded-lg border border-[#22c55e]/15 flex-shrink-0">
-          <div className="text-right">
-            <div className="text-[10px] uppercase font-bold text-slate-500">Knockout Progress</div>
-            <div className="text-sm font-black text-white">
-              {completedKnockouts} <span className="text-slate-700">/</span> {knockoutMatches.length} Matches
+        
+        <div className="flex flex-row items-center gap-3 flex-wrap md:flex-nowrap">
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all shadow-sm cursor-pointer flex-shrink-0 h-[46px]"
+          >
+            <Share2 className="h-4 w-4" />
+            Share
+          </button>
+
+          <div className="flex items-center gap-3 bg-[#060a08] px-4 py-2.5 rounded-lg border border-[#22c55e]/15 flex-shrink-0 h-[46px]">
+            <div className="text-right">
+              <div className="text-[10px] uppercase font-bold text-slate-500">Knockout Progress</div>
+              <div className="text-sm font-black text-white">
+                {completedKnockouts} <span className="text-slate-700">/</span> {knockoutMatches.length} Matches
+              </div>
             </div>
-          </div>
-          <div className="h-8 w-px bg-slate-800" />
-          <div className="text-xs text-emerald-400 font-extrabold flex items-center gap-1.5">
-            <Trophy className="h-4 w-4 text-[#fbbf24] animate-bounce" />
-            Find your Champion!
+            <div className="h-8 w-px bg-slate-800" />
+            <div className="text-xs text-emerald-400 font-extrabold flex items-center gap-1.5">
+              <Trophy className="h-4 w-4 text-[#fbbf24] animate-bounce" />
+              Find your Champion!
+            </div>
           </div>
         </div>
       </div>
@@ -253,9 +266,38 @@ export default function KnockoutBracket() {
         ))}
       </div>
 
-      {/* DESKTOP FULL BRACKET BOARD VIEW */}
-      <div className="hidden lg:block w-full overflow-x-auto pb-4 no-scrollbar">
-        <div id="bracket-board" className="min-w-[1960px] flex flex-row items-stretch justify-between gap-x-20 py-6 px-4 h-[1100px] relative">
+      {/* DESKTOP FULL BRACKET BOARD VIEW (Rendered off-screen on mobile to allow image export) */}
+      <div className="w-full overflow-x-auto pb-4 no-scrollbar lg:relative lg:block lg:opacity-100 lg:pointer-events-auto lg:h-auto lg:z-auto absolute opacity-0 pointer-events-none -z-50 h-0 overflow-hidden flex justify-center">
+        <div id="bracket-board" className="min-w-[1960px] inline-flex flex-col items-stretch justify-start py-8 px-16 h-[1220px] relative bg-[#060a08] mx-auto">
+          
+          {/* PREMIUM PERSONALIZED HEADER BAR - CENTERED VERTICAL */}
+          <div className="w-full flex flex-col items-center justify-center border-b border-slate-800/80 pb-6 mb-8 flex-shrink-0 z-10 gap-3">
+            {/* Creator Profile Image Badge */}
+            {userAvatar ? (
+              <img 
+                src={userAvatar} 
+                alt="" 
+                className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500/50 flex-shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 font-extrabold text-2xl select-none flex-shrink-0">
+                ⚽
+              </div>
+            )}
+            
+            {/* Verified Badge & Creator Name Inline */}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="flex items-center justify-center bg-emerald-500 text-slate-950 rounded-full w-4 h-4 text-[9px] font-extrabold select-none flex-shrink-0" title="Verified Simulation">
+                ✓
+              </span>
+              <span className="text-lg font-black tracking-wide text-white uppercase">
+                {userName || 'Football Fan'}'s Prediction
+              </span>
+            </div>
+          </div>
+
+          {/* INNER COLUMNS WRAPPER */}
+          <div className="flex flex-row items-stretch justify-center gap-x-20 flex-1">
           
           {/* SVG Connector Lines Canvas */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -390,8 +432,24 @@ export default function KnockoutBracket() {
             </div>
           </div>
 
+          </div> {/* Closing INNER COLUMNS WRAPPER */}
+
+          {/* SUBTLE WATERMARK IN BOTTOM-CENTER */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none select-none text-center">
+            <span className="text-xs font-black tracking-widest text-[#f2f7f5]/20 uppercase">
+              ⚽ FIFA WORLD CUP 2026 PREDICTOR SIMULATOR
+            </span>
+          </div>
         </div>
       </div>
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        championId={championId}
+        runnerUpId={runnerUpId}
+        bracketElementId="bracket-board"
+      />
     </div>
   );
 }

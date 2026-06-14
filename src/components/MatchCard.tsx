@@ -75,6 +75,7 @@ export default function MatchCard({ match, onSelectWinner, lightTheme = false, c
           <img 
             src={getFlagUrl(team.id)} 
             alt={`${team.name} Flag`} 
+            crossOrigin="anonymous"
             className={`object-cover rounded-sm shadow flex-shrink-0 select-none ${
               compact ? 'w-4.5 h-3' : 'w-5.5 h-3.5'
             } ${
