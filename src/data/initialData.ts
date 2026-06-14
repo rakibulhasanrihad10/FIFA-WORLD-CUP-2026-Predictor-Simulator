@@ -105,21 +105,21 @@ export function generateGroupMatches(): Match[] {
 // Structure for the Round of 32 knockout matches and their paths to the final
 export const KNOCKOUT_METADATA: Omit<Match, 'homeTeamId' | 'awayTeamId' | 'winnerId'>[] = [
   // Round of 32
-  { id: 'R32_1', type: 'knockout', stage: 'R32', placeholderHome: '2A', placeholderAway: '2B', nextMatchId: 'R16_1', nextMatchIsHome: true },
-  { id: 'R32_2', type: 'knockout', stage: 'R32', placeholderHome: '1C', placeholderAway: '2F', nextMatchId: 'R16_1', nextMatchIsHome: false },
-  { id: 'R32_3', type: 'knockout', stage: 'R32', placeholderHome: '1E', placeholderAway: '3rd A/B/C/D/F', nextMatchId: 'R16_2', nextMatchIsHome: true },
+  { id: 'R32_1', type: 'knockout', stage: 'R32', placeholderHome: '1E', placeholderAway: '3rd A/B/C/D/F', nextMatchId: 'R16_1', nextMatchIsHome: true },
+  { id: 'R32_2', type: 'knockout', stage: 'R32', placeholderHome: '1I', placeholderAway: '3rd C/D/F/G/H', nextMatchId: 'R16_1', nextMatchIsHome: false },
+  { id: 'R32_3', type: 'knockout', stage: 'R32', placeholderHome: '2A', placeholderAway: '2B', nextMatchId: 'R16_2', nextMatchIsHome: true },
   { id: 'R32_4', type: 'knockout', stage: 'R32', placeholderHome: '1F', placeholderAway: '2C', nextMatchId: 'R16_2', nextMatchIsHome: false },
-  { id: 'R32_5', type: 'knockout', stage: 'R32', placeholderHome: '2E', placeholderAway: '2I', nextMatchId: 'R16_3', nextMatchIsHome: true },
-  { id: 'R32_6', type: 'knockout', stage: 'R32', placeholderHome: '1I', placeholderAway: '3rd C/D/F/G/H', nextMatchId: 'R16_3', nextMatchIsHome: false },
-  { id: 'R32_7', type: 'knockout', stage: 'R32', placeholderHome: '1A', placeholderAway: '3rd C/E/F/H/I', nextMatchId: 'R16_4', nextMatchIsHome: true },
-  { id: 'R32_8', type: 'knockout', stage: 'R32', placeholderHome: '1L', placeholderAway: '3rd E/H/I/J/K', nextMatchId: 'R16_4', nextMatchIsHome: false },
-  { id: 'R32_9', type: 'knockout', stage: 'R32', placeholderHome: '1G', placeholderAway: '3rd A/E/H/I/J', nextMatchId: 'R16_5', nextMatchIsHome: true },
-  { id: 'R32_10', type: 'knockout', stage: 'R32', placeholderHome: '1D', placeholderAway: '3rd B/E/F/I/J', nextMatchId: 'R16_5', nextMatchIsHome: false },
-  { id: 'R32_11', type: 'knockout', stage: 'R32', placeholderHome: '1H', placeholderAway: '2J', nextMatchId: 'R16_6', nextMatchIsHome: true },
-  { id: 'R32_12', type: 'knockout', stage: 'R32', placeholderHome: '2K', placeholderAway: '2L', nextMatchId: 'R16_6', nextMatchIsHome: false },
-  { id: 'R32_13', type: 'knockout', stage: 'R32', placeholderHome: '1B', placeholderAway: '3rd E/F/G/I/J', nextMatchId: 'R16_7', nextMatchIsHome: true },
+  { id: 'R32_5', type: 'knockout', stage: 'R32', placeholderHome: '2K', placeholderAway: '2L', nextMatchId: 'R16_3', nextMatchIsHome: true },
+  { id: 'R32_6', type: 'knockout', stage: 'R32', placeholderHome: '1H', placeholderAway: '2J', nextMatchId: 'R16_3', nextMatchIsHome: false },
+  { id: 'R32_7', type: 'knockout', stage: 'R32', placeholderHome: '1D', placeholderAway: '3rd B/E/F/I/J', nextMatchId: 'R16_4', nextMatchIsHome: true },
+  { id: 'R32_8', type: 'knockout', stage: 'R32', placeholderHome: '1G', placeholderAway: '3rd A/E/H/I/J', nextMatchId: 'R16_4', nextMatchIsHome: false },
+  { id: 'R32_9', type: 'knockout', stage: 'R32', placeholderHome: '1C', placeholderAway: '2F', nextMatchId: 'R16_5', nextMatchIsHome: true },
+  { id: 'R32_10', type: 'knockout', stage: 'R32', placeholderHome: '2E', placeholderAway: '2I', nextMatchId: 'R16_5', nextMatchIsHome: false },
+  { id: 'R32_11', type: 'knockout', stage: 'R32', placeholderHome: '1A', placeholderAway: '3rd C/E/F/H/I', nextMatchId: 'R16_6', nextMatchIsHome: true },
+  { id: 'R32_12', type: 'knockout', stage: 'R32', placeholderHome: '1L', placeholderAway: '3rd E/H/I/J/K', nextMatchId: 'R16_6', nextMatchIsHome: false },
+  { id: 'R32_13', type: 'knockout', stage: 'R32', placeholderHome: '1J', placeholderAway: '2H', nextMatchId: 'R16_7', nextMatchIsHome: true },
   { id: 'R32_14', type: 'knockout', stage: 'R32', placeholderHome: '2D', placeholderAway: '2G', nextMatchId: 'R16_7', nextMatchIsHome: false },
-  { id: 'R32_15', type: 'knockout', stage: 'R32', placeholderHome: '1J', placeholderAway: '2H', nextMatchId: 'R16_8', nextMatchIsHome: true },
+  { id: 'R32_15', type: 'knockout', stage: 'R32', placeholderHome: '1B', placeholderAway: '3rd E/F/G/I/J', nextMatchId: 'R16_8', nextMatchIsHome: true },
   { id: 'R32_16', type: 'knockout', stage: 'R32', placeholderHome: '1K', placeholderAway: '3rd D/E/I/J/L', nextMatchId: 'R16_8', nextMatchIsHome: false },
 
   // Round of 16
@@ -145,6 +145,75 @@ export const KNOCKOUT_METADATA: Omit<Match, 'homeTeamId' | 'awayTeamId' | 'winne
   // Final
   { id: 'F', type: 'knockout', stage: 'final', placeholderHome: 'Winner SF_1', placeholderAway: 'Winner SF_2' }
 ];
+
+const OFFICIAL_MATCH_NUMBERS: Record<string, number> = {
+  // Round of 32
+  R32_1: 75,
+  R32_2: 78,
+  R32_3: 73,
+  R32_4: 76,
+  R32_5: 84,
+  R32_6: 83,
+  R32_7: 82,
+  R32_8: 81,
+  R32_9: 74,
+  R32_10: 77,
+  R32_11: 79,
+  R32_12: 80,
+  R32_13: 87,
+  R32_14: 86,
+  R32_15: 85,
+  R32_16: 88,
+
+  // Round of 16
+  R16_1: 90,
+  R16_2: 89,
+  R16_3: 93,
+  R16_4: 94,
+  R16_5: 91,
+  R16_6: 92,
+  R16_7: 95,
+  R16_8: 96,
+
+  // Quarter Finals
+  QF_1: 97,
+  QF_2: 98,
+  QF_3: 99,
+  QF_4: 100,
+
+  // Semi Finals
+  SF_1: 101,
+  SF_2: 102,
+
+  // Final
+  F: 104
+};
+
+export function getOfficialMatchNumber(matchId: string): string | number {
+  if (matchId.startsWith('G_')) {
+    return matchId.replace('G_', '');
+  }
+  return OFFICIAL_MATCH_NUMBERS[matchId] || matchId;
+}
+
+export function formatPlaceholder(placeholder: string | undefined): string {
+  if (!placeholder) return 'TBD';
+  
+  // Convert Winner R32_1 -> Winner Match 75, etc.
+  const winnerMatch = placeholder.match(/^Winner (R32|R16|QF|SF)_(\d+)$/);
+  if (winnerMatch) {
+    const stage = winnerMatch[1];
+    const index = parseInt(winnerMatch[2], 10);
+    const num = getOfficialMatchNumber(`${stage}_${index}`);
+    return `Winner Match ${num}`;
+  }
+  
+  if (placeholder === 'Winner SF_1') return 'Winner Match 101';
+  if (placeholder === 'Winner SF_2') return 'Winner Match 102';
+  
+  return placeholder;
+}
+
 
 export function getFlagUrl(teamId: string): string {
   const mapping: Record<string, string> = {

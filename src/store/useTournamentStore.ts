@@ -19,6 +19,7 @@ interface TournamentState {
   quickRankGroup: (groupId: string, teamIdsInOrder: string[]) => void;
   clearGroupPredictions: (groupId: string) => void;
   advanceToKnockouts: () => void;
+  toggleThirdPlaceQualifier: (teamId: string) => void;
   reset: () => void;
 }
 
@@ -302,22 +303,22 @@ export const useTournamentStore = create<TournamentState>()(
         const findRunnerUp = (group: string) => standings[group][1].teamId;
 
         const r32Pairings: { id: string; home: string; away: string }[] = [
-          { id: 'R32_1', home: findRunnerUp('A'), away: findRunnerUp('B') },
-          { id: 'R32_2', home: findWinner('C'), away: findRunnerUp('F') },
-          { id: 'R32_3', home: findWinner('E'), away: bestEightThirdsIds[0] }, // 1st 3rd-place team
-          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') },
-          { id: 'R32_5', home: findRunnerUp('E'), away: findRunnerUp('I') },
-          { id: 'R32_6', home: findWinner('I'), away: bestEightThirdsIds[1] }, // 2nd 3rd-place team
-          { id: 'R32_7', home: findWinner('A'), away: bestEightThirdsIds[2] }, // 3rd 3rd-place team
-          { id: 'R32_8', home: findWinner('L'), away: bestEightThirdsIds[3] }, // 4th 3rd-place team
-          { id: 'R32_9', home: findWinner('G'), away: bestEightThirdsIds[4] }, // 5th 3rd-place team
-          { id: 'R32_10', home: findWinner('D'), away: bestEightThirdsIds[5] }, // 6th 3rd-place team
-          { id: 'R32_11', home: findWinner('H'), away: findRunnerUp('J') },
-          { id: 'R32_12', home: findRunnerUp('K'), away: findRunnerUp('L') },
-          { id: 'R32_13', home: findWinner('B'), away: bestEightThirdsIds[6] }, // 7th 3rd-place team
-          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') },
-          { id: 'R32_15', home: findWinner('J'), away: findRunnerUp('H') },
-          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] }, // 8th 3rd-place team
+          { id: 'R32_1', home: findWinner('E'), away: bestEightThirdsIds[0] }, // Match 75
+          { id: 'R32_2', home: findWinner('I'), away: bestEightThirdsIds[1] }, // Match 78
+          { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
+          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
+          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
+          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
+          { id: 'R32_7', home: findWinner('D'), away: bestEightThirdsIds[5] }, // Match 82
+          { id: 'R32_8', home: findWinner('G'), away: bestEightThirdsIds[4] }, // Match 81
+          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
+          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
+          { id: 'R32_11', home: findWinner('A'), away: bestEightThirdsIds[2] }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: bestEightThirdsIds[3] }, // Match 80
+          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
+          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
+          { id: 'R32_15', home: findWinner('B'), away: bestEightThirdsIds[6] }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] }, // Match 88
         ];
 
         r32Pairings.forEach((pairing) => {
@@ -354,6 +355,82 @@ export const useTournamentStore = create<TournamentState>()(
           championId: undefined,
           runnerUpId: undefined,
           step: 'qualification',
+        });
+      },
+      
+      toggleThirdPlaceQualifier: (teamId) => {
+        const { qualifiedTeams, standings, matches } = get();
+        let updatedThirds = [...qualifiedTeams.thirdPlaces];
+        
+        if (updatedThirds.includes(teamId)) {
+          updatedThirds = updatedThirds.filter(id => id !== teamId);
+        } else {
+          if (updatedThirds.length < 8) {
+            updatedThirds.push(teamId);
+          } else {
+            return;
+          }
+        }
+
+        // Sort by group letter A-L
+        const getGroupOfTeam = (tId: string) => TEAMS.find(t => t.id === tId)?.group || 'A';
+        updatedThirds.sort((a, b) => getGroupOfTeam(a).localeCompare(getGroupOfTeam(b)));
+
+        const updatedMatches = [...matches];
+        const findWinner = (group: string) => standings[group][0].teamId;
+        const findRunnerUp = (group: string) => standings[group][1].teamId;
+
+        const r32Pairings: { id: string; home: string; away: string }[] = [
+          { id: 'R32_1', home: findWinner('E'), away: updatedThirds[0] || '' }, // Match 75
+          { id: 'R32_2', home: findWinner('I'), away: updatedThirds[1] || '' }, // Match 78
+          { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
+          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
+          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
+          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
+          { id: 'R32_7', home: findWinner('D'), away: updatedThirds[5] || '' }, // Match 82
+          { id: 'R32_8', home: findWinner('G'), away: updatedThirds[4] || '' }, // Match 81
+          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
+          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
+          { id: 'R32_11', home: findWinner('A'), away: updatedThirds[2] || '' }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: updatedThirds[3] || '' }, // Match 80
+          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
+          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
+          { id: 'R32_15', home: findWinner('B'), away: updatedThirds[6] || '' }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: updatedThirds[7] || '' }, // Match 88
+        ];
+
+        r32Pairings.forEach((pairing) => {
+          const matchIdx = updatedMatches.findIndex((m) => m.id === pairing.id);
+          if (matchIdx !== -1) {
+            updatedMatches[matchIdx] = {
+              ...updatedMatches[matchIdx],
+              homeTeamId: pairing.home,
+              awayTeamId: pairing.away,
+              winnerId: undefined,
+            };
+          }
+        });
+
+        // Reset all subsequent knockout rounds
+        updatedMatches.forEach((m, idx) => {
+          if (m.type === 'knockout' && !m.id.startsWith('R32_')) {
+            updatedMatches[idx] = {
+              ...m,
+              homeTeamId: undefined,
+              awayTeamId: undefined,
+              winnerId: undefined,
+            };
+          }
+        });
+
+        set({
+          matches: updatedMatches,
+          qualifiedTeams: {
+            ...qualifiedTeams,
+            thirdPlaces: updatedThirds,
+          },
+          championId: undefined,
+          runnerUpId: undefined,
         });
       },
 

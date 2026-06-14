@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Match, Team } from '../types/tournament';
-import { TEAMS, getFlagUrl } from '../data/initialData';
+import { TEAMS, getFlagUrl, getOfficialMatchNumber, formatPlaceholder } from '../data/initialData';
 import { Check } from 'lucide-react';
 
 interface MatchCardProps {
@@ -39,7 +39,7 @@ export default function MatchCard({ match, onSelectWinner, lightTheme = false }:
               lightTheme
                 ? 'bg-slate-200/60 text-slate-500 border-slate-300/40'
                 : 'bg-slate-900/60 text-slate-500 border-slate-800/40'
-            }`}>{placeholder || 'TBD'}</span>
+            }`}>{formatPlaceholder(placeholder)}</span>
           </div>
         </div>
       );
@@ -98,7 +98,7 @@ export default function MatchCard({ match, onSelectWinner, lightTheme = false }:
       <div className={`flex items-center justify-between px-1.5 text-[10px] uppercase font-bold tracking-wider ${
         lightTheme ? 'text-slate-500' : 'text-slate-500'
       }`}>
-        <span>Match {match.id.replace('G_', '').replace('R32_', '').replace('R16_', '').replace('QF_', '').replace('SF_', '')}</span>
+        <span>Match {getOfficialMatchNumber(match.id)}</span>
         {match.groupId && (
           <span className={lightTheme ? 'text-emerald-700' : 'text-emerald-500/80'}>
             Group {match.groupId}

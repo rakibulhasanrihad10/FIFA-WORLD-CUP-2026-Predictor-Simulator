@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
-import { TEAMS, getFlagUrl } from '../data/initialData';
-import { Award, ShieldAlert, ArrowRight } from 'lucide-react';
+import { TEAMS, getFlagUrl, GROUPS } from '../data/initialData';
+import { Award, ShieldAlert, ArrowRight, Check } from 'lucide-react';
 
 export default function Qualification() {
-  const { qualifiedTeams, setStep } = useTournamentStore();
+  const { qualifiedTeams, setStep, standings, toggleThirdPlaceQualifier } = useTournamentStore();
 
   const getTeamInfo = (id: string) => {
     return TEAMS.find((t) => t.id === id);
@@ -34,6 +34,55 @@ export default function Qualification() {
     );
   };
 
+  const renderInteractiveThirdPlaceBadge = (teamId: string, points: number) => {
+    const team = getTeamInfo(teamId);
+    if (!team) return null;
+
+    const isSelected = qualifiedTeams.thirdPlaces.includes(teamId);
+    
+    return (
+      <button
+        key={teamId}
+        onClick={() => toggleThirdPlaceQualifier(teamId)}
+        className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all duration-200 cursor-pointer ${
+          isSelected
+            ? 'bg-amber-500/10 text-amber-200 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.06)]'
+            : 'bg-slate-950/15 border-slate-800/40 text-slate-400 hover:border-slate-700/60 opacity-60 hover:opacity-90'
+        }`}
+      >
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <img 
+            src={getFlagUrl(team.id)} 
+            alt={`${team.name} Flag`} 
+            className="w-5.5 h-3.5 object-cover rounded-sm shadow border border-slate-900 flex-shrink-0 select-none"
+          />
+          <div className="min-w-0 flex-1">
+            <div className={`truncate text-xs font-bold leading-tight ${isSelected ? 'text-amber-100' : 'text-slate-300'}`}>
+              {team.name}
+            </div>
+            <div className="text-[9px] text-slate-500 font-bold uppercase">
+              Group {team.group} • {points} pts
+            </div>
+          </div>
+        </div>
+        {isSelected && (
+          <span className="flex items-center justify-center h-4.5 w-4.5 rounded-full bg-amber-500 text-slate-950 flex-shrink-0 ml-1.5">
+            <Check className="h-3 w-3 stroke-[3.5]" />
+          </span>
+        )}
+      </button>
+    );
+  };
+
+  // Extract third place teams from the standings of each group
+  const thirdPlaceCandidates = GROUPS.map((group) => {
+    const groupStandings = standings[group];
+    const standing = groupStandings && groupStandings.length >= 3 ? groupStandings[2] : null;
+    return standing ? { teamId: standing.teamId, points: standing.points } : null;
+  }).filter((x): x is { teamId: string; points: number } => x !== null);
+
+  const isAdvanceEnabled = qualifiedTeams.thirdPlaces.length === 8;
+
   return (
     <div className="w-full flex flex-col gap-8 max-w-7xl mx-auto px-4 py-8 animate-fade-in">
       {/* Page Title */}
@@ -43,7 +92,7 @@ export default function Qualification() {
         </div>
         <h2 className="text-2xl md:text-3xl font-black text-white">Qualified Teams (Round of 32)</h2>
         <p className="text-xs md:text-sm text-slate-400">
-          The following 32 teams have secured qualification to the knockout stages. Review the qualifiers and then enter the bracket prediction stage.
+          Verify qualifiers below. You can toggle which 8 of the 12 third-place teams survive to complete your knockout bracket.
         </p>
       </div>
 
@@ -85,7 +134,7 @@ export default function Qualification() {
           </div>
         </div>
 
-        {/* Best 3rd-Places */}
+        {/* Best 3rd-Places (Interactive Toggles) */}
         <div className="glass-panel rounded-2xl p-5 border-amber-500/15 bg-gradient-to-b from-amber-500/[0.01] to-slate-900/30 flex flex-col gap-4">
           <div className="flex items-center gap-2 border-b border-amber-500/10 pb-3">
             <div className="bg-amber-500/10 p-1.5 rounded-md border border-amber-500/30">
@@ -93,22 +142,40 @@ export default function Qualification() {
             </div>
             <div>
               <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider">Best 3rd Places</h3>
-              <p className="text-[10px] text-slate-500 font-semibold">Top 8 performers across groups</p>
+              <p className="text-[10px] text-slate-500 font-semibold">
+                Select exactly 8 ({qualifiedTeams.thirdPlaces.length} selected)
+              </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {qualifiedTeams.thirdPlaces.map((id) =>
-              renderTeamBadge(id, 'bg-slate-900/40 border-slate-800/80 hover:border-amber-500/30 transition-colors')
+          <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[500px] pr-1.5">
+            {thirdPlaceCandidates.map((cand) =>
+              renderInteractiveThirdPlaceBadge(cand.teamId, cand.points)
             )}
           </div>
         </div>
       </div>
 
       {/* Advance button */}
-      <div className="flex justify-center mt-4">
+      <div className="flex flex-col items-center gap-2 mt-4">
+        {/* Helper Alert Text */}
+        {!isAdvanceEnabled ? (
+          <p className="text-xs font-extrabold text-amber-400 animate-pulse text-center select-none bg-amber-500/5 px-4 py-2 rounded-lg border border-amber-500/10">
+            ⚠️ Please select exactly 8 third-place teams (currently {qualifiedTeams.thirdPlaces.length} chosen) to unlock the knockout stage.
+          </p>
+        ) : (
+          <p className="text-xs font-extrabold text-emerald-400 text-center select-none bg-emerald-500/5 px-4 py-2 rounded-lg border border-emerald-500/10">
+            ✓ Exactly 8 third-place qualifiers selected! You are ready to proceed.
+          </p>
+        )}
+
         <button
+          disabled={!isAdvanceEnabled}
           onClick={() => setStep('R32')}
-          className="flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-slate-950 font-black text-sm uppercase rounded-xl tracking-wider hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-md transform hover:scale-[1.02]"
+          className={`flex items-center gap-2 px-8 py-3.5 font-black text-sm uppercase rounded-xl tracking-wider transition-all transform duration-200 shadow-md ${
+            isAdvanceEnabled
+              ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-slate-950 hover:from-emerald-500 hover:to-emerald-400 cursor-pointer hover:scale-[1.02]'
+              : 'bg-slate-800 text-slate-500 border border-slate-700/60 opacity-50 cursor-not-allowed'
+          }`}
         >
           Enter Knockout Bracket
           <ArrowRight className="h-4 w-4 stroke-[3]" />
