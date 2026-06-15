@@ -270,29 +270,31 @@ export default function KnockoutBracket() {
       <div className="w-full overflow-x-auto pb-4 no-scrollbar lg:relative lg:block lg:opacity-100 lg:pointer-events-auto lg:h-auto lg:z-auto absolute opacity-0 pointer-events-none -z-50 h-0 overflow-hidden flex justify-center">
         <div id="bracket-board" className="min-w-[1960px] inline-flex flex-col items-stretch justify-start py-8 px-16 h-[1220px] relative bg-[#060a08] mx-auto">
           
-          {/* PREMIUM PERSONALIZED HEADER BAR - CENTERED VERTICAL */}
-          <div className="w-full flex flex-col items-center justify-center border-b border-slate-800/80 pb-6 mb-8 flex-shrink-0 z-10 gap-3">
-            {/* Creator Profile Image Badge */}
-            {userAvatar ? (
-              <img 
-                src={userAvatar} 
-                alt="" 
-                className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500/50 flex-shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 font-extrabold text-2xl select-none flex-shrink-0">
-                ⚽
+          {/* PREMIUM PERSONALIZED HEADER BAR - STICKY CENTERED VERTICAL */}
+          <div className="w-full border-b border-slate-800/80 pb-6 mb-8 flex-shrink-0 z-10">
+            <div className="sticky left-0 right-0 mx-auto w-fit flex flex-col items-center justify-center gap-3">
+              {/* Creator Profile Image Badge */}
+              {userAvatar ? (
+                <img 
+                  src={userAvatar} 
+                  alt="" 
+                  className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500/50 flex-shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 font-extrabold text-2xl select-none flex-shrink-0">
+                  ⚽
+                </div>
+              )}
+              
+              {/* Verified Badge & Creator Name Inline */}
+              <div className="flex items-center gap-2 mt-1">
+                <span className="flex items-center justify-center bg-emerald-500 text-slate-950 rounded-full w-4 h-4 text-[9px] font-extrabold select-none flex-shrink-0" title="Verified Simulation">
+                  ✓
+                </span>
+                <span className="text-lg font-black tracking-wide text-white uppercase">
+                  {userName || 'Football Fan'}'s Prediction
+                </span>
               </div>
-            )}
-            
-            {/* Verified Badge & Creator Name Inline */}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="flex items-center justify-center bg-emerald-500 text-slate-950 rounded-full w-4 h-4 text-[9px] font-extrabold select-none flex-shrink-0" title="Verified Simulation">
-                ✓
-              </span>
-              <span className="text-lg font-black tracking-wide text-white uppercase">
-                {userName || 'Football Fan'}'s Prediction
-              </span>
             </div>
           </div>
 

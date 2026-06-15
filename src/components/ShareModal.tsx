@@ -52,9 +52,6 @@ export default function ShareModal({
     setErrorMessage(null);
     setGeneratedImageUrl(null);
 
-    // Give DOM a small moment to render/update elements
-    await new Promise((resolve) => setTimeout(resolve, 350));
-
     const targetId = type === 'summary' ? 'export-summary-card' : bracketElementId;
     const element = document.getElementById(targetId);
 
@@ -64,17 +61,26 @@ export default function ShareModal({
       return;
     }
 
+    // Add exporting class to temporarily make bracket lines subtle for the image export
+    element.classList.add('is-exporting');
+
+    // Give DOM a small moment to render/update elements and apply styling classes
+    await new Promise((resolve) => setTimeout(resolve, 350));
+
     try {
       const dataUrl = await toPng(element, {
         cacheBust: true,
         backgroundColor: '#060a08',
-        ...(type === 'summary' ? { width: 800, height: 1200 } : {}),
+        width: type === 'summary' ? 800 : (element.scrollWidth || element.offsetWidth),
+        height: type === 'summary' ? 1200 : (element.scrollHeight || element.offsetHeight),
+        pixelRatio: 3,
       });
       setGeneratedImageUrl(dataUrl);
     } catch (err) {
       console.error('Failed to generate image:', err);
       setErrorMessage('Failed to generate sharing image. Please check permissions or try again.');
     } finally {
+      element.classList.remove('is-exporting');
       setIsGenerating(false);
     }
   };
