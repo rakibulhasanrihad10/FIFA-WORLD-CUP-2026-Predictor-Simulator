@@ -51,6 +51,29 @@ export default function ChampionScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  // Play champion celebration song if available
+  useEffect(() => {
+    if (championId) {
+      const audio = new Audio(`/audio/${championId.toLowerCase()}_winner.mp3`);
+      audio.volume = 0.5;
+      audio.loop = true;
+      
+      // Silence error reporting if the audio file does not exist
+      audio.onerror = () => {
+        // File not found or failed to load: do nothing
+      };
+
+      audio.play().catch(() => {
+        // Autoplay blocked or load failed: do nothing
+      });
+
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+      };
+    }
+  }, [championId]);
+
   return (
     <>
       <div className="w-full flex flex-col gap-10 py-10 animate-fade-in max-w-full overflow-hidden">

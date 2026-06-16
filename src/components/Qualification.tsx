@@ -3,10 +3,10 @@
 import React from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { TEAMS, getFlagUrl, GROUPS } from '../data/initialData';
-import { Award, ShieldAlert, ArrowRight, Check } from 'lucide-react';
+import { Award, ShieldAlert, ArrowRight, Check, Sparkles } from 'lucide-react';
 
 export default function Qualification() {
-  const { qualifiedTeams, setStep, standings, toggleThirdPlaceQualifier } = useTournamentStore();
+  const { qualifiedTeams, setStep, standings, toggleThirdPlaceQualifier, autoSelectThirdPlacesByRank } = useTournamentStore();
 
   const getTeamInfo = (id: string) => {
     return TEAMS.find((t) => t.id === id);
@@ -28,7 +28,7 @@ export default function Qualification() {
         />
         <div className="min-w-0 flex-1">
           <div className="truncate text-white text-xs font-bold leading-tight">{team.name}</div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase">Group {team.group}</div>
+          <div className="text-[9px] text-slate-400 font-bold uppercase">Group {team.group} • #{team.rank}</div>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function Qualification() {
               {team.name}
             </div>
             <div className="text-[9px] text-slate-500 font-bold uppercase">
-              Group {team.group} • {points} pts
+              Group {team.group} • {points} pts • #{team.rank}
             </div>
           </div>
         </div>
@@ -135,17 +135,38 @@ export default function Qualification() {
         </div>
 
         {/* Best 3rd-Places (Interactive Toggles) */}
-        <div className="glass-panel rounded-2xl p-5 border-amber-500/15 bg-gradient-to-b from-amber-500/[0.01] to-slate-900/30 flex flex-col gap-4">
-          <div className="flex items-center gap-2 border-b border-amber-500/10 pb-3">
-            <div className="bg-amber-500/10 p-1.5 rounded-md border border-amber-500/30">
-              <ShieldAlert className="h-5 w-5 text-amber-400" />
+        <div className="glass-panel rounded-2xl p-5 border-[#00ffff]/15 bg-gradient-to-b from-[#00ffff]/[0.01] to-slate-900/30 flex flex-col gap-4">
+          <div className="flex items-start justify-between border-b border-[#00ffff]/10 pb-3 gap-2 select-none">
+            <div className="flex items-center gap-2">
+              <div className="bg-[#00ffff]/10 p-1.5 rounded-md border border-[#00ffff]/30 text-[#00ffff] drop-shadow-[0_0_6px_rgba(0,255,255,0.15)]">
+                <ShieldAlert className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-[#00ffff] uppercase tracking-wider drop-shadow-[0_0_8px_rgba(0,255,255,0.25)]">
+                  Best 3rd Places
+                </h3>
+                <p className="text-[10px] font-black uppercase tracking-wide text-[#BDC3C7]">
+                  Select exactly 8 (
+                  <span className={`transition-all duration-300 ${
+                    qualifiedTeams.thirdPlaces.length === 8
+                      ? 'text-emerald-400 font-extrabold'
+                      : 'text-[#00ffff] font-extrabold animate-pulse'
+                  }`}>
+                    {qualifiedTeams.thirdPlaces.length} selected
+                  </span>
+                  )
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider">Best 3rd Places</h3>
-              <p className="text-[10px] text-slate-500 font-semibold">
-                Select exactly 8 ({qualifiedTeams.thirdPlaces.length} selected)
-              </p>
-            </div>
+            
+            <button
+              onClick={autoSelectThirdPlacesByRank}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00ffff]/10 border border-[#00ffff]/30 text-[#00ffff] hover:bg-[#00ffff]/20 hover:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 shadow-sm hover:scale-[1.03] cursor-pointer flex-shrink-0"
+              title="Auto-select top 8 teams based on FIFA ranks"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Auto
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[500px] pr-1.5">
             {thirdPlaceCandidates.map((cand) =>
@@ -158,15 +179,21 @@ export default function Qualification() {
       {/* Advance button */}
       <div className="flex flex-col items-center gap-2 mt-4">
         {/* Helper Alert Text */}
-        {!isAdvanceEnabled ? (
-          <p className="text-xs font-extrabold text-amber-400 animate-pulse text-center select-none bg-amber-500/5 px-4 py-2 rounded-lg border border-amber-500/10">
-            ⚠️ 24 teams have automatically qualified from the 12 groups. Please select exactly 8 of the 12 third-place teams (currently {qualifiedTeams.thirdPlaces.length} chosen) to unlock the Round of 32 knockout stage.
-          </p>
-        ) : (
-          <p className="text-xs font-extrabold text-emerald-400 text-center select-none bg-emerald-500/5 px-4 py-2 rounded-lg border border-emerald-500/10">
-            ✓ Exactly 8 third-place qualifiers selected! You are ready to proceed.
-          </p>
-        )}
+        <p className={`text-xs font-extrabold text-center select-none px-4 py-2 rounded-lg border transition-all duration-300 max-w-2xl ${
+          !isAdvanceEnabled
+            ? 'text-[#ff6b6b] bg-[#ff6b6b]/5 border-[#ff6b6b]/20 animate-pulse'
+            : 'text-[#2ecc71] bg-[#2ecc71]/5 border-[#2ecc71]/20 shadow-[0_0_12px_rgba(46,204,113,0.06)]'
+        }`}>
+          {!isAdvanceEnabled ? (
+            <span>
+              ⚠️ 24 teams have automatically qualified from the 12 groups. Please select exactly 8 of the 12 third-place teams (currently {qualifiedTeams.thirdPlaces.length}/8 chosen). You cannot proceed yet.
+            </span>
+          ) : (
+            <span>
+              ✓ Success! 32 teams have qualified. The Round of 32 knockout stage is now unlocked.
+            </span>
+          )}
+        </p>
 
         <button
           disabled={!isAdvanceEnabled}
@@ -177,7 +204,7 @@ export default function Qualification() {
               : 'bg-slate-800 text-slate-500 border border-slate-700/60 opacity-50 cursor-not-allowed'
           }`}
         >
-          Enter Knockout Bracket
+          Proceed to Knockout
           <ArrowRight className="h-4 w-4 stroke-[3]" />
         </button>
       </div>

@@ -18,6 +18,13 @@ export default function Home() {
     setMounted(true);
   }, []);
 
+  // Scroll to top of the page when navigating between screens
+  useEffect(() => {
+    if (mounted) {
+      window.scrollTo(0, 0);
+    }
+  }, [step, mounted]);
+
   if (!mounted) {
     return (
       <div className="flex flex-col flex-1 items-center justify-center min-h-screen bg-[#060a08] text-slate-400 select-none">
@@ -47,7 +54,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#060a08] text-[#f2f7f5]">
-      <Header />
+      {step !== 'home' && <Header />}
       <main className="flex-1 w-full flex flex-col items-center">
         {renderStepComponent()}
       </main>

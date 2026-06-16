@@ -23,6 +23,8 @@ interface TournamentState {
   advanceToKnockouts: () => void;
   toggleThirdPlaceQualifier: (teamId: string) => void;
   setBrandingDetails: (userName: string, userAvatar: string | undefined) => void;
+  autoPredictAllGroupsByRank: () => void;
+  autoSelectThirdPlacesByRank: () => void;
   reset: () => void;
 }
 
@@ -439,6 +441,138 @@ export const useTournamentStore = create<TournamentState>()(
           qualifiedTeams: {
             ...qualifiedTeams,
             thirdPlaces: updatedThirds,
+          },
+          championId: undefined,
+          runnerUpId: undefined,
+        });
+      },
+
+      autoPredictAllGroupsByRank: () => {
+        const { matches, standings } = get();
+        const updatedMatches = [...matches];
+        const updatedStandings = { ...standings };
+
+        // Process only group stage matches
+        updatedMatches.forEach((match, idx) => {
+          if (match.type === 'group' && match.homeTeamId && match.awayTeamId) {
+            const homeTeam = TEAMS.find((t) => t.id === match.homeTeamId);
+            const awayTeam = TEAMS.find((t) => t.id === match.awayTeamId);
+            
+            if (homeTeam && awayTeam) {
+              const winnerId = homeTeam.rank < awayTeam.rank ? homeTeam.id : awayTeam.id;
+              updatedMatches[idx] = {
+                ...match,
+                winnerId,
+              };
+            }
+          }
+        });
+
+        // Recalculate standings for all groups
+        GROUPS.forEach((groupId) => {
+          updatedStandings[groupId] = calculateGroupStandings(groupId, updatedMatches);
+        });
+
+        // Reset all knockout matches to their default structure
+        updatedMatches.forEach((m, idx) => {
+          if (m.type === 'knockout') {
+            updatedMatches[idx] = {
+              ...m,
+              homeTeamId: undefined,
+              awayTeamId: undefined,
+              winnerId: undefined,
+            };
+          }
+        });
+
+        set({
+          matches: updatedMatches,
+          standings: updatedStandings,
+          qualifiedTeams: { winners: [], runnersUp: [], thirdPlaces: [] },
+          championId: undefined,
+          runnerUpId: undefined,
+        });
+      },
+
+      autoSelectThirdPlacesByRank: () => {
+        const { standings, qualifiedTeams, matches } = get();
+        
+        // 1. Get current 3rd place team ID from each of the 12 groups
+        const thirdPlaceCandidateIds = GROUPS.map((group) => {
+          const groupStandings = standings[group];
+          return groupStandings && groupStandings.length >= 3 ? groupStandings[2].teamId : null;
+        }).filter((id): id is string => id !== null);
+
+        // 2. Sort candidates by FIFA rank (ascending: lower value is better)
+        const sortedByRank = thirdPlaceCandidateIds
+          .map((id) => {
+            const team = TEAMS.find((t) => t.id === id);
+            return { id, rank: team ? team.rank : 999 };
+          })
+          .sort((a, b) => a.rank - b.rank);
+
+        // 3. Take the top 8 teams
+        const bestEightThirdsIds = sortedByRank
+          .slice(0, 8)
+          .map((item) => item.id);
+
+        // 4. Sort selection by group letter (A-L) to maintain stable bracket pairings
+        const getGroupOfTeam = (tId: string) => TEAMS.find(t => t.id === tId)?.group || 'A';
+        bestEightThirdsIds.sort((a, b) => getGroupOfTeam(a).localeCompare(getGroupOfTeam(b)));
+
+        // 5. Populate Round of 32 Matches
+        const updatedMatches = [...matches];
+        const findWinner = (group: string) => standings[group][0].teamId;
+        const findRunnerUp = (group: string) => standings[group][1].teamId;
+
+        const r32Pairings: { id: string; home: string; away: string }[] = [
+          { id: 'R32_1', home: findWinner('E'), away: bestEightThirdsIds[0] || '' }, // Match 75
+          { id: 'R32_2', home: findWinner('I'), away: bestEightThirdsIds[1] || '' }, // Match 78
+          { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
+          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
+          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
+          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
+          { id: 'R32_7', home: findWinner('D'), away: bestEightThirdsIds[5] || '' }, // Match 82
+          { id: 'R32_8', home: findWinner('G'), away: bestEightThirdsIds[4] || '' }, // Match 81
+          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
+          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
+          { id: 'R32_11', home: findWinner('A'), away: bestEightThirdsIds[2] || '' }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: bestEightThirdsIds[3] || '' }, // Match 80
+          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
+          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
+          { id: 'R32_15', home: findWinner('B'), away: bestEightThirdsIds[6] || '' }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] || '' }, // Match 88
+        ];
+
+        r32Pairings.forEach((pairing) => {
+          const matchIdx = updatedMatches.findIndex((m) => m.id === pairing.id);
+          if (matchIdx !== -1) {
+            updatedMatches[matchIdx] = {
+              ...updatedMatches[matchIdx],
+              homeTeamId: pairing.home,
+              awayTeamId: pairing.away,
+              winnerId: undefined,
+            };
+          }
+        });
+
+        // Reset all subsequent knockout rounds
+        updatedMatches.forEach((m, idx) => {
+          if (m.type === 'knockout' && !m.id.startsWith('R32_')) {
+            updatedMatches[idx] = {
+              ...m,
+              homeTeamId: undefined,
+              awayTeamId: undefined,
+              winnerId: undefined,
+            };
+          }
+        });
+
+        set({
+          matches: updatedMatches,
+          qualifiedTeams: {
+            ...qualifiedTeams,
+            thirdPlaces: bestEightThirdsIds,
           },
           championId: undefined,
           runnerUpId: undefined,

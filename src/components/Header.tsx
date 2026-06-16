@@ -99,14 +99,16 @@ export default function Header() {
             </div>
           </div>
 
-          <button
-            onClick={reset}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 hover:text-red-300 transition-all"
-            title="Reset predictions"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Reset
-          </button>
+          {step !== 'home' && (
+            <button
+              onClick={reset}
+              className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 hover:text-red-300 transition-all"
+              title="Reset predictions"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reset
+            </button>
+          )}
         </div>
 
         {/* Steps Navigation */}

@@ -6,17 +6,17 @@ import { Team } from '../types/tournament';
 import MatchCard from './MatchCard';
 import StandingsTable from './StandingsTable';
 import { GROUPS, TEAMS, getFlagUrl } from '../data/initialData';
-import { CheckCircle2, ChevronRight, Play } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Play, Sparkles } from 'lucide-react';
 
 export default function GroupStage() {
-  const { matches, standings, selectWinner, quickRankGroup, clearGroupPredictions, advanceToKnockouts, reset } = useTournamentStore();
+  const { matches, standings, selectWinner, quickRankGroup, clearGroupPredictions, advanceToKnockouts, autoPredictAllGroupsByRank, reset } = useTournamentStore();
   const [activeGroup, setActiveGroup] = useState<string>('A');
   const [predictionMode, setPredictionMode] = useState<'match' | 'rank'>('rank');
 
   // Local state for the 4 ranking slots
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null, null]);
 
-  // Sync slots when activeGroup changes
+  // Sync slots when activeGroup, matches, or standings change
   useEffect(() => {
     const groupMatches = matches.filter((m) => m.groupId === activeGroup);
     const completed = groupMatches.filter((m) => m.winnerId !== undefined).length;
@@ -28,7 +28,7 @@ export default function GroupStage() {
     } else {
       setSlots([null, null, null, null]);
     }
-  }, [activeGroup]);
+  }, [activeGroup, matches, standings]);
 
   // Filter matches for the active group
   const groupMatches = matches.filter((m) => m.groupId === activeGroup);
@@ -121,13 +121,24 @@ export default function GroupStage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Matches Section: Dark Mode Surface Container */}
         <div className={`${predictionMode === 'match' ? 'lg:col-span-3' : 'lg:col-span-5'} bg-[#111827] text-white rounded-2xl p-5 border border-[#1F2937] shadow-lg flex flex-col gap-4 animate-fade-in`}>
-          <div className="relative flex flex-col md:flex-row md:items-center pb-2 border-b border-slate-800 gap-3 select-none">
-            <h2 className="text-xl font-black text-white tracking-tight self-start md:self-auto">
-              Group {activeGroup}
-            </h2>
-            <p className="text-xs text-slate-400 font-medium text-center w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:w-[60%]">
-              Choose winner for each match individually, or switch to Direct Group Ranking to drag/click teams directly in order.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-800 gap-3 select-none">
+            <div className="flex flex-col sm:flex-row sm:items-baseline gap-1.5">
+              <h2 className="text-xl font-black text-white tracking-tight">
+                Group {activeGroup}
+              </h2>
+              <p className="text-xs text-slate-400 font-medium">
+                — Choose winner for each match individually, or rank teams in order.
+              </p>
+            </div>
+            
+            <button
+              onClick={autoPredictAllGroupsByRank}
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00ffff]/10 border border-[#00ffff]/30 text-[#00ffff] hover:bg-[#00ffff]/20 hover:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 shadow-md hover:scale-[1.02] cursor-pointer flex-shrink-0"
+              title="Auto-predict all 12 groups by FIFA rank"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Auto-Predict by FIFA Rank
+            </button>
           </div>
 
           {/* Mode Toggle Bar */}
@@ -306,7 +317,7 @@ export default function GroupStage() {
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)] cursor-pointer uppercase tracking-wider"
               >
                 <Play className="h-3 w-3 fill-slate-950 stroke-none" />
-                Seed Knockout Bracket
+                Proceed to Qualifiers
               </button>
             ) : (
               isActiveGroupCompleted && activeGroup !== 'L' && (
