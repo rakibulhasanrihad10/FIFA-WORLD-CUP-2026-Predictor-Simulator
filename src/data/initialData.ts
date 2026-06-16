@@ -9,7 +9,7 @@ export const TEAMS: Team[] = [
 
   // Group B
   { id: 'CAN', name: 'Canada', flag: '🇨🇦', group: 'B', rank: 40 },
-  { id: 'BIH', name: 'Bosnia and Herzegovina', flag: '🇧🇦', group: 'B', rank: 74 },
+  { id: 'BIH', name: 'Bosnia', flag: '🇧🇦', group: 'B', rank: 74 },
   { id: 'QAT', name: 'Qatar', flag: '🇶🇦', group: 'B', rank: 38 },
   { id: 'SUI', name: 'Switzerland', flag: '🇨🇭', group: 'B', rank: 19 },
 
