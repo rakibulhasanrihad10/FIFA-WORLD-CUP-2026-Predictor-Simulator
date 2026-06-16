@@ -54,7 +54,7 @@ export default function Home() {
       
       {/* Footer copyright */}
       <footer className="w-full text-center py-6 text-[10px] text-slate-600 border-t border-slate-950 font-bold uppercase tracking-wider select-none bg-slate-950/25 flex-shrink-0">
-        ⚽ FIFA World Cup 2026 Predictor Simulator • Developed for Pair Programming Task
+        ⚽ FIFA World Cup 2026 Predictor Simulator • Developed by Rakibul Hasan
       </footer>
     </div>
   );

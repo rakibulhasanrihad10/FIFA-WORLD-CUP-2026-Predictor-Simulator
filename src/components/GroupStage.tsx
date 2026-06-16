@@ -6,12 +6,12 @@ import { Team } from '../types/tournament';
 import MatchCard from './MatchCard';
 import StandingsTable from './StandingsTable';
 import { GROUPS, TEAMS, getFlagUrl } from '../data/initialData';
-import { CheckCircle2, ChevronRight, Play, BarChart3 } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Play } from 'lucide-react';
 
 export default function GroupStage() {
   const { matches, standings, selectWinner, quickRankGroup, clearGroupPredictions, advanceToKnockouts, reset } = useTournamentStore();
   const [activeGroup, setActiveGroup] = useState<string>('A');
-  const [predictionMode, setPredictionMode] = useState<'match' | 'rank'>('match');
+  const [predictionMode, setPredictionMode] = useState<'match' | 'rank'>('rank');
 
   // Local state for the 4 ranking slots
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null, null]);
@@ -142,94 +142,18 @@ export default function GroupStage() {
         </div>
       </div>
 
-      {/* All Groups Overview Grid */}
-      <div className="flex flex-col gap-4 animate-fade-in">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <h3 className="text-xs font-extrabold tracking-wider uppercase text-slate-400">All Groups Selector</h3>
-          <span className="text-xs text-slate-500 font-bold">
-            {GROUPS.filter(g => {
-              const { completed, total } = getGroupProgress(g);
-              return completed === total;
-            }).length} of 12 complete
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {GROUPS.map((group) => {
-            const displayTeams = getGroupDisplayTeams(group);
-            const { completed, total } = getGroupProgress(group);
-            const isCompleted = completed === total;
-            const isActive = activeGroup === group;
-
-            return (
-              <button
-                key={`overview-${group}`}
-                onClick={() => setActiveGroup(group)}
-                className={`flex flex-col p-3 rounded-xl border transition-all text-left duration-200 transform hover:scale-[1.02] cursor-pointer ${
-                  isActive
-                    ? 'bg-[#111827] border-[#10B981] border-2 text-white shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-                    : 'bg-[#111827] border-[#1F2937] text-white hover:bg-[#161f30] hover:border-[#2b3a4e]'
-                }`}
-              >
-                {/* Header row: Letter and Status */}
-                <div className="flex items-center justify-between w-full mb-3 select-none">
-                  <span className="text-xl font-black text-[#F3F4F6]">{group}</span>
-                  {isCompleted ? (
-                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 bg-slate-900 rounded-full flex-shrink-0" />
-                  ) : isActive ? (
-                    <div className="h-4.5 w-4.5 rounded-full border-2 border-dashed border-[#10B981] animate-spin-slow flex-shrink-0" />
-                  ) : (
-                    <div className="h-4.5 w-4.5 rounded-full border border-slate-700 bg-slate-800/40 flex-shrink-0" />
-                  )}
-                </div>
-
-                {/* 4 Teams Horizontal Grid */}
-                <div className="grid grid-cols-4 gap-1.5 w-full select-none">
-                  {displayTeams.map((team) => (
-                    <div key={team.id} className="flex flex-col items-center gap-1">
-                      <img
-                        src={getFlagUrl(team.id)}
-                        alt={`${team.name} Flag`}
-                        className="w-6 h-4 object-cover rounded shadow-sm border border-black/20 flex-shrink-0"
-                      />
-                      <span className="text-[9px] font-bold text-center tracking-tight text-[#9CA3AF]">
-                        {team.id}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Active Group Details */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Matches Section: Dark Mode Surface Container */}
-        <div className="lg:col-span-3 bg-[#111827] text-white rounded-2xl p-5 border border-[#1F2937] shadow-lg flex flex-col gap-4 animate-fade-in">
+        <div className={`${predictionMode === 'match' ? 'lg:col-span-3' : 'lg:col-span-5'} bg-[#111827] text-white rounded-2xl p-5 border border-[#1F2937] shadow-lg flex flex-col gap-4 animate-fade-in`}>
           <div className="flex items-center justify-between pb-2 border-b border-slate-800">
             <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
               Group {activeGroup}
             </h2>
-            <button className="border border-[#b89834] text-[#b89834] bg-[#b89834]/10 rounded-full px-3.5 py-1 text-xs font-extrabold flex items-center gap-1.5 hover:bg-[#b89834]/20 transition-all select-none">
-              <BarChart3 className="h-3.5 w-3.5" />
-              Compare
-            </button>
           </div>
 
           {/* Mode Toggle Bar */}
           <div className="flex items-center justify-between bg-slate-950/40 p-1 rounded-xl border border-slate-800 select-none">
-            <button
-              onClick={() => setPredictionMode('match')}
-              className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                predictionMode === 'match'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Match-by-Match
-            </button>
             <button
               onClick={() => setPredictionMode('rank')}
               className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${
@@ -239,6 +163,16 @@ export default function GroupStage() {
               }`}
             >
               Direct Group Ranking
+            </button>
+            <button
+              onClick={() => setPredictionMode('match')}
+              className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+                predictionMode === 'match'
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Match-by-Match
             </button>
           </div>
 
@@ -359,51 +293,127 @@ export default function GroupStage() {
                   })}
                 </div>
               </div>
-
-              {/* Status footer */}
-              <div className="text-[11px] text-slate-400 font-bold flex items-center gap-1.5 select-none border-t border-slate-800 pt-3.5">
-                {!slots.includes(null) ? (
-                  <span className="text-[#10B981] flex items-center gap-1.5 animate-fade-in">
-                    <CheckCircle2 className="h-4 w-4" />
-                    All slots filled! Predictions resolved automatically.
-                  </span>
-                ) : (
-                  <span className="text-amber-500 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                    Fill all 4 target slots to calculate group standings.
-                  </span>
-                )}
-              </div>
             </div>
           )}
 
-          {/* Navigation Helper */}
-          <div className="mt-2 flex items-center justify-between border-t border-slate-800 pt-3">
-            <div className="text-xs text-slate-400 italic">
-              {isActiveGroupCompleted 
-                ? `🏆 Group ${activeGroup} predictions complete!` 
-                : 'Please complete all group predictions.'
-              }
+          {/* Navigation & Status Footer */}
+          <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-3">
+            <div className="text-xs font-extrabold select-none flex items-center gap-1.5">
+              {isAllGroupsCompleted ? (
+                <span className="text-amber-500 flex items-center gap-1.5 animate-fade-in">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                  All predictions complete! Click "Seed Knockout Bracket" to advance to the knockout stage.
+                </span>
+              ) : isActiveGroupCompleted ? (
+                <span className="text-[#10B981] flex items-center gap-1.5 animate-fade-in">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Group {activeGroup} predictions complete!
+                </span>
+              ) : predictionMode === 'rank' ? (
+                <span className="text-amber-500 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                  Fill all 4 target slots to calculate group standings.
+                </span>
+              ) : (
+                <span className="text-amber-500 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                  Complete all matches in this group to calculate standings.
+                </span>
+              )}
             </div>
 
-            {isActiveGroupCompleted && activeGroup !== 'L' && (
+            {isAllGroupsCompleted ? (
               <button
-                onClick={handleNextGroup}
-                className="flex items-center gap-1 px-4 py-2 rounded-lg text-xs font-bold bg-slate-850 text-white border border-slate-700 hover:bg-slate-800 transition-all shadow-sm"
+                onClick={advanceToKnockouts}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)] cursor-pointer uppercase tracking-wider"
               >
-                Next Group
-                <ChevronRight className="h-3.5 w-3.5" />
+                <Play className="h-3 w-3 fill-slate-950 stroke-none" />
+                Seed Knockout Bracket
               </button>
+            ) : (
+              isActiveGroupCompleted && activeGroup !== 'L' && (
+                <button
+                  onClick={handleNextGroup}
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg text-xs font-bold bg-slate-850 text-white border border-slate-700 hover:bg-slate-800 transition-all shadow-sm cursor-pointer"
+                >
+                  Next Group
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              )
             )}
           </div>
         </div>
 
         {/* Live Standings Section */}
-        <div className="lg:col-span-2">
-          <StandingsTable
-            groupId={activeGroup}
-            standings={standings[activeGroup] || []}
-          />
+        {predictionMode === 'match' && (
+          <div className="lg:col-span-2">
+            <StandingsTable
+              groupId={activeGroup}
+              standings={standings[activeGroup] || []}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* All Groups Overview Grid */}
+      <div className="flex flex-col gap-4 animate-fade-in">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h3 className="text-xs font-extrabold tracking-wider uppercase text-slate-400">All Groups</h3>
+          <span className="text-xs text-slate-500 font-bold">
+            {GROUPS.filter(g => {
+              const { completed, total } = getGroupProgress(g);
+              return completed === total;
+            }).length} of 12 complete
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {GROUPS.map((group) => {
+            const displayTeams = getGroupDisplayTeams(group);
+            const { completed, total } = getGroupProgress(group);
+            const isCompleted = completed === total;
+            const isActive = activeGroup === group;
+
+            return (
+              <button
+                key={`overview-${group}`}
+                onClick={() => setActiveGroup(group)}
+                className={`flex flex-col p-3 rounded-xl border transition-all text-left duration-200 transform hover:scale-[1.02] cursor-pointer ${
+                  isActive
+                    ? 'bg-[#111827] border-[#10B981] border-2 text-white shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                    : 'bg-[#111827] border-[#1F2937] text-white hover:bg-[#161f30] hover:border-[#2b3a4e]'
+                }`}
+              >
+                {/* Header row: Letter and Status */}
+                <div className="flex items-center justify-between w-full mb-3 select-none">
+                  <span className="text-xl font-black text-[#F3F4F6]">{group}</span>
+                  {isCompleted ? (
+                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 bg-slate-900 rounded-full flex-shrink-0" />
+                  ) : isActive ? (
+                    <div className="h-4.5 w-4.5 rounded-full border-2 border-dashed border-[#10B981] animate-spin-slow flex-shrink-0" />
+                  ) : (
+                    <div className="h-4.5 w-4.5 rounded-full border border-slate-700 bg-slate-800/40 flex-shrink-0" />
+                  )}
+                </div>
+
+                {/* 4 Teams Horizontal Grid */}
+                <div className="grid grid-cols-4 gap-1.5 w-full select-none">
+                  {displayTeams.map((team) => (
+                    <div key={team.id} className="flex flex-col items-center gap-1">
+                      <img
+                        src={getFlagUrl(team.id)}
+                        alt={`${team.name} Flag`}
+                        className="w-6 h-4 object-cover rounded shadow-sm border border-black/20 flex-shrink-0"
+                      />
+                      <span className="text-[9px] font-bold text-center tracking-tight text-[#9CA3AF]">
+                        {team.id}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 

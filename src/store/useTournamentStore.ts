@@ -294,12 +294,16 @@ export const useTournamentStore = create<TournamentState>()(
           return a.group.localeCompare(b.group);
         });
 
-        const bestEightThirdsObj = sortedThirdPlaces.slice(0, 8);
-        
-        // Sort the qualifying third-place teams by group letter A-L to fill designated slots sequentially
-        const bestEightThirdsIds = bestEightThirdsObj
-          .sort((a, b) => a.group.localeCompare(b.group))
-          .map((t) => t.teamId);
+        // If all third-place teams have equal points (typical for Direct Group Ranking where all 3rd places get 3 points),
+        // we do not pre-select any teams and force the user to choose their best 8 on the qualification screen.
+        const allPointsEqual = thirdPlaceTeams.length > 0 && thirdPlaceTeams.every((t) => t.points === thirdPlaceTeams[0].points);
+
+        const bestEightThirdsIds = allPointsEqual
+          ? []
+          : sortedThirdPlaces
+              .slice(0, 8)
+              .sort((a, b) => a.group.localeCompare(b.group))
+              .map((t) => t.teamId);
 
         // 3. Populate Round of 32 Matches
         const updatedMatches = [...matches];
@@ -310,22 +314,22 @@ export const useTournamentStore = create<TournamentState>()(
         const findRunnerUp = (group: string) => standings[group][1].teamId;
 
         const r32Pairings: { id: string; home: string; away: string }[] = [
-          { id: 'R32_1', home: findWinner('E'), away: bestEightThirdsIds[0] }, // Match 75
-          { id: 'R32_2', home: findWinner('I'), away: bestEightThirdsIds[1] }, // Match 78
+          { id: 'R32_1', home: findWinner('E'), away: bestEightThirdsIds[0] || '' }, // Match 75
+          { id: 'R32_2', home: findWinner('I'), away: bestEightThirdsIds[1] || '' }, // Match 78
           { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
           { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
           { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
           { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
-          { id: 'R32_7', home: findWinner('D'), away: bestEightThirdsIds[5] }, // Match 82
-          { id: 'R32_8', home: findWinner('G'), away: bestEightThirdsIds[4] }, // Match 81
+          { id: 'R32_7', home: findWinner('D'), away: bestEightThirdsIds[5] || '' }, // Match 82
+          { id: 'R32_8', home: findWinner('G'), away: bestEightThirdsIds[4] || '' }, // Match 81
           { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
           { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
-          { id: 'R32_11', home: findWinner('A'), away: bestEightThirdsIds[2] }, // Match 79
-          { id: 'R32_12', home: findWinner('L'), away: bestEightThirdsIds[3] }, // Match 80
+          { id: 'R32_11', home: findWinner('A'), away: bestEightThirdsIds[2] || '' }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: bestEightThirdsIds[3] || '' }, // Match 80
           { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
           { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
-          { id: 'R32_15', home: findWinner('B'), away: bestEightThirdsIds[6] }, // Match 85
-          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] }, // Match 88
+          { id: 'R32_15', home: findWinner('B'), away: bestEightThirdsIds[6] || '' }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] || '' }, // Match 88
         ];
 
         r32Pairings.forEach((pairing) => {

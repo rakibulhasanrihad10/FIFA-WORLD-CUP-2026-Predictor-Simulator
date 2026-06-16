@@ -160,7 +160,7 @@ export default function Qualification() {
         {/* Helper Alert Text */}
         {!isAdvanceEnabled ? (
           <p className="text-xs font-extrabold text-amber-400 animate-pulse text-center select-none bg-amber-500/5 px-4 py-2 rounded-lg border border-amber-500/10">
-            ⚠️ Please select exactly 8 third-place teams (currently {qualifiedTeams.thirdPlaces.length} chosen) to unlock the knockout stage.
+            ⚠️ 24 teams have automatically qualified from the 12 groups. Please select exactly 8 of the 12 third-place teams (currently {qualifiedTeams.thirdPlaces.length} chosen) to unlock the Round of 32 knockout stage.
           </p>
         ) : (
           <p className="text-xs font-extrabold text-emerald-400 text-center select-none bg-emerald-500/5 px-4 py-2 rounded-lg border border-emerald-500/10">
