@@ -142,18 +142,36 @@ export default function Header() {
         {/* Progress & Reset Desktop */}
         {step !== 'home' && (
           <div className="hidden md:flex items-center gap-6">
-            <div className="flex flex-col items-end w-40">
-              <div className="flex justify-between w-full text-xs font-medium text-slate-400 mb-1">
-                <span>Predictions</span>
-                <span className="text-emerald-400">{percentage}%</span>
+            {step === 'group' ? (
+              <div className="flex items-center gap-3 bg-slate-950/65 px-4 py-2 rounded-lg border border-[#22c55e]/15 flex-shrink-0 select-none">
+                <div className="text-right">
+                  <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Group Matches Done</div>
+                  <div className="text-sm font-black text-white leading-none mt-1">
+                    {completedGroup} <span className="text-slate-600">/</span> {groupMatches.length}
+                  </div>
+                </div>
+                <div className="h-6 w-px bg-slate-800" />
+                <div className="text-center">
+                  <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Overall</div>
+                  <div className="text-xs font-black text-emerald-400 leading-none mt-1">
+                    {groupPercentage}%
+                  </div>
+                </div>
               </div>
-              <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
-                <div 
-                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-550 ease-out shadow-[0_0_8px_rgba(16,185,129,0.3)]" 
-                  style={{ width: `${percentage}%` }}
-                />
+            ) : (
+              <div className="flex flex-col items-end w-40 select-none">
+                <div className="flex justify-between w-full text-xs font-medium text-slate-400 mb-1">
+                  <span>Predictions</span>
+                  <span className="text-emerald-400">{percentage}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-550 ease-out shadow-[0_0_8px_rgba(16,185,129,0.3)]" 
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <button
               onClick={reset}
@@ -169,14 +187,21 @@ export default function Header() {
       {/* Mobile progress bar */}
       {step !== 'home' && (
         <div className="md:hidden mt-2.5 w-full">
-          <div className="flex justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Overall Simulation Progress</span>
-            <span className="text-emerald-400">{percentage}% ({completedPredictions}/{totalMatches})</span>
-          </div>
+          {step === 'group' ? (
+            <div className="flex justify-between text-[10px] font-semibold text-slate-400 mb-1 select-none">
+              <span>Group Matches Progress</span>
+              <span className="text-emerald-400 font-extrabold">{completedGroup} / {groupMatches.length} ({groupPercentage}%)</span>
+            </div>
+          ) : (
+            <div className="flex justify-between text-[10px] font-semibold text-slate-400 mb-1 select-none">
+              <span>Overall Simulation Progress</span>
+              <span className="text-emerald-400">{percentage}% ({completedPredictions}/{totalMatches})</span>
+            </div>
+          )}
           <div className="w-full h-1 bg-slate-950 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-500" 
-              style={{ width: `${percentage}%` }}
+              style={{ width: `${step === 'group' ? groupPercentage : percentage}%` }}
             />
           </div>
         </div>

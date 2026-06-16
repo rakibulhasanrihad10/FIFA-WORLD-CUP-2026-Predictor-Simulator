@@ -117,39 +117,17 @@ export default function GroupStage() {
 
   return (
     <div className="w-full flex flex-col gap-6 max-w-7xl mx-auto px-4 py-6 animate-fade-in">
-      {/* Intro info */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800/60">
-        <div>
-          <h2 className="text-xl font-black text-white">Group Stage Predictions</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Choose winner for each match individually, or switch to Direct Group Ranking to drag/click teams directly in order.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 bg-[#060a08] px-4 py-2.5 rounded-lg border border-[#22c55e]/15 flex-shrink-0">
-          <div className="text-right">
-            <div className="text-[10px] uppercase font-bold text-slate-500">Group Matches Done</div>
-            <div className="text-lg font-black text-white">
-              {completedCount} <span className="text-slate-600">/</span> {allGroupMatches.length}
-            </div>
-          </div>
-          <div className="h-8 w-px bg-slate-800" />
-          <div className="text-center">
-            <div className="text-[10px] uppercase font-bold text-slate-500">Overall</div>
-            <div className="text-sm font-black text-emerald-400">
-              {Math.round((completedCount / allGroupMatches.length) * 100)}%
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Active Group Details */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Matches Section: Dark Mode Surface Container */}
         <div className={`${predictionMode === 'match' ? 'lg:col-span-3' : 'lg:col-span-5'} bg-[#111827] text-white rounded-2xl p-5 border border-[#1F2937] shadow-lg flex flex-col gap-4 animate-fade-in`}>
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-            <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+          <div className="relative flex flex-col md:flex-row md:items-center pb-2 border-b border-slate-800 gap-3 select-none">
+            <h2 className="text-xl font-black text-white tracking-tight self-start md:self-auto">
               Group {activeGroup}
             </h2>
+            <p className="text-xs text-slate-400 font-medium text-center w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:w-[60%]">
+              Choose winner for each match individually, or switch to Direct Group Ranking to drag/click teams directly in order.
+            </p>
           </div>
 
           {/* Mode Toggle Bar */}
@@ -416,28 +394,6 @@ export default function GroupStage() {
           })}
         </div>
       </div>
-
-
-
-      {/* Advancing Banner */}
-      {isAllGroupsCompleted && (
-        <div className="mt-8 flex justify-center animate-pulse-glow rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-900/60 to-emerald-950/60 p-6 border border-emerald-500/40">
-          <div className="text-center flex flex-col items-center gap-3">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
-            <h3 className="text-lg font-black text-white">All Group Stage Predictions Locked In!</h3>
-            <p className="text-xs text-slate-400 max-w-md">
-              The simulator has computed the standings. Click the button below to view the 32 qualified teams and seed the knockout bracket.
-            </p>
-            <button
-              onClick={advanceToKnockouts}
-              className="mt-2 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-slate-950 font-black text-sm uppercase rounded-xl tracking-wider hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-md transform hover:scale-[1.02]"
-            >
-              <Play className="h-4 w-4 fill-slate-950 stroke-none" />
-              Seed Knockout Bracket
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -53,8 +53,13 @@ export default function Home() {
       </main>
       
       {/* Footer copyright */}
-      <footer className="w-full text-center py-6 text-[10px] text-slate-600 border-t border-slate-950 font-bold uppercase tracking-wider select-none bg-slate-950/25 flex-shrink-0">
-        ⚽ FIFA World Cup 2026 Predictor Simulator • Developed by Rakibul Hasan
+      <footer className="w-full text-center py-6 border-t border-slate-950/80 bg-slate-950/30 flex-shrink-0 select-none flex flex-col gap-1.5">
+        <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest">
+          ⚽ FIFA World Cup 2026 Predictor Simulator
+        </span>
+        <span className="text-[9px] text-slate-600 font-semibold tracking-wider">
+          Developed by <span className="text-slate-500 font-bold hover:text-emerald-400 transition-colors duration-200 cursor-default">Rakibul Hasan</span>
+        </span>
       </footer>
     </div>
   );
