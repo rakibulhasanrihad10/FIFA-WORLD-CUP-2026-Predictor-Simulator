@@ -83,6 +83,10 @@ export default function GroupStage() {
   const handlePlace = (teamId: string) => {
     if (slots.includes(teamId)) return;
 
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+
     const nextIdx = slots.indexOf(null);
     if (nextIdx !== -1) {
       const newSlots = [...slots];
@@ -97,6 +101,10 @@ export default function GroupStage() {
   };
 
   const handleRemove = (index: number) => {
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+
     const newSlots = [...slots];
     newSlots[index] = null;
     setSlots(newSlots);

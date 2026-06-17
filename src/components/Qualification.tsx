@@ -1,12 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { TEAMS, getFlagUrl, GROUPS } from '../data/initialData';
 import { Award, ShieldAlert, ArrowRight, Check, Sparkles } from 'lucide-react';
 
 export default function Qualification() {
   const { qualifiedTeams, setStep, standings, toggleThirdPlaceQualifier, autoSelectThirdPlacesByRank } = useTournamentStore();
+
+  // Scroll to the Best 3rd Places interactive section when the screen loads
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const element = document.getElementById('best-3rd-places-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const getTeamInfo = (id: string) => {
     return TEAMS.find((t) => t.id === id);
@@ -90,7 +101,9 @@ export default function Qualification() {
         <div className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest">
           Group Stage Concluded
         </div>
-        <h2 className="text-2xl md:text-3xl font-black text-white">Qualified Teams (Round of 32)</h2>
+        <h2 className="text-2xl md:text-3xl font-black text-white">
+          Qualified Teams <span className="block md:inline text-slate-400 text-lg md:text-2xl font-medium mt-1 md:mt-0 md:ml-1.5">(Round of 32)</span>
+        </h2>
         <p className="text-xs md:text-sm text-slate-400">
           Verify qualifiers below. You can toggle which 8 of the 12 third-place teams survive to complete your knockout bracket.
         </p>
@@ -135,7 +148,7 @@ export default function Qualification() {
         </div>
 
         {/* Best 3rd-Places (Interactive Toggles) */}
-        <div className="glass-panel rounded-2xl p-5 border-[#00ffff]/15 bg-gradient-to-b from-[#00ffff]/[0.01] to-slate-900/30 flex flex-col gap-4">
+        <div id="best-3rd-places-section" className="glass-panel rounded-2xl p-5 border-[#00ffff]/15 bg-gradient-to-b from-[#00ffff]/[0.01] to-slate-900/30 flex flex-col gap-4">
           <div className="flex items-start justify-between border-b border-[#00ffff]/10 pb-3 gap-2 select-none">
             <div className="flex items-center gap-2">
               <div className="bg-[#00ffff]/10 p-1.5 rounded-md border border-[#00ffff]/30 text-[#00ffff] drop-shadow-[0_0_6px_rgba(0,255,255,0.15)]">

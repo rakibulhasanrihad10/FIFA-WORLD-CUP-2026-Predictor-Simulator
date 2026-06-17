@@ -88,7 +88,7 @@ export default function ChampionScreen() {
           Your 2026 World Cup Champion
         </h2>
         <p className="text-xs md:text-sm text-slate-400">
-          You have successfully simulated the tournament. Here is your predicted champion and the full bracket layout.
+          You have successfully simulated the tournament.
         </p>
       </div>
 
@@ -117,7 +117,6 @@ export default function ChampionScreen() {
               )}
               {runnerUp?.name || 'TBD'}
             </div>
-            <div className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">Group {runnerUp?.group}</div>
           </div>
         </div>
 
@@ -147,7 +146,6 @@ export default function ChampionScreen() {
               )}
               {champion?.name || 'TBD'}
             </div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Group {champion?.group}</div>
           </div>
         </div>
       </div>

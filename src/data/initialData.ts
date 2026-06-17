@@ -2,76 +2,76 @@ import { Team, Match } from '../types/tournament';
 
 export const TEAMS: Team[] = [
   // Group A
-  { id: 'MEX', name: 'Mexico', flag: '🇲🇽', group: 'A', rank: 15 },
-  { id: 'RSA', name: 'South Africa', flag: '🇿🇦', group: 'A', rank: 59 },
-  { id: 'KOR', name: 'South Korea', flag: '🇰🇷', group: 'A', rank: 22 },
-  { id: 'CZE', name: 'Czechia', flag: '🇨🇿', group: 'A', rank: 36 },
+  { id: 'MEX', name: 'Mexico', flag: '🇲🇽', group: 'A', rank: 14 },
+  { id: 'RSA', name: 'South Africa', flag: '🇿🇦', group: 'A', rank: 60 },
+  { id: 'KOR', name: 'South Korea', flag: '🇰🇷', group: 'A', rank: 25 },
+  { id: 'CZE', name: 'Czechia', flag: '🇨🇿', group: 'A', rank: 40 },
 
   // Group B
-  { id: 'CAN', name: 'Canada', flag: '🇨🇦', group: 'B', rank: 40 },
-  { id: 'BIH', name: 'Bosnia', flag: '🇧🇦', group: 'B', rank: 74 },
-  { id: 'QAT', name: 'Qatar', flag: '🇶🇦', group: 'B', rank: 38 },
+  { id: 'CAN', name: 'Canada', flag: '🇨🇦', group: 'B', rank: 30 },
+  { id: 'BIH', name: 'Bosnia', flag: '🇧🇦', group: 'B', rank: 64 },
+  { id: 'QAT', name: 'Qatar', flag: '🇶🇦', group: 'B', rank: 56 },
   { id: 'SUI', name: 'Switzerland', flag: '🇨🇭', group: 'B', rank: 19 },
 
   // Group C
-  { id: 'BRA', name: 'Brazil', flag: '🇧🇷', group: 'C', rank: 5 },
-  { id: 'MAR', name: 'Morocco', flag: '🇲🇦', group: 'C', rank: 12 },
-  { id: 'HAI', name: 'Haiti', flag: '🇭🇹', group: 'C', rank: 86 },
-  { id: 'SCO', name: 'Scotland', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', group: 'C', rank: 34 },
+  { id: 'BRA', name: 'Brazil', flag: '🇧🇷', group: 'C', rank: 6 },
+  { id: 'MAR', name: 'Morocco', flag: '🇲🇦', group: 'C', rank: 7 },
+  { id: 'HAI', name: 'Haiti', flag: '🇭🇹', group: 'C', rank: 83 },
+  { id: 'SCO', name: 'Scotland', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', group: 'C', rank: 42 },
 
   // Group D
-  { id: 'USA', name: 'United States', flag: '🇺🇸', group: 'D', rank: 16 },
-  { id: 'PAR', name: 'Paraguay', flag: '🇵🇾', group: 'D', rank: 56 },
-  { id: 'AUS', name: 'Australia', flag: '🇦🇺', group: 'D', rank: 24 },
+  { id: 'USA', name: 'United States', flag: '🇺🇸', group: 'D', rank: 17 },
+  { id: 'PAR', name: 'Paraguay', flag: '🇵🇾', group: 'D', rank: 41 },
+  { id: 'AUS', name: 'Australia', flag: '🇦🇺', group: 'D', rank: 27 },
   { id: 'TUR', name: 'Türkiye', flag: '🇹🇷', group: 'D', rank: 26 },
 
   // Group E
-  { id: 'GER', name: 'Germany', flag: '🇩🇪', group: 'E', rank: 11 },
-  { id: 'CUW', name: 'Curaçao', flag: '🇨🇼', group: 'E', rank: 91 },
-  { id: 'CIV', name: "Côte d'Ivoire", flag: '🇨🇮', group: 'E', rank: 39 },
-  { id: 'ECU', name: 'Ecuador', flag: '🇪🇨', group: 'E', rank: 31 },
+  { id: 'GER', name: 'Germany', flag: '🇩🇪', group: 'E', rank: 10 },
+  { id: 'CUW', name: 'Curaçao', flag: '🇨🇼', group: 'E', rank: 82 },
+  { id: 'CIV', name: "Côte d'Ivoire", flag: '🇨🇮', group: 'E', rank: 33 },
+  { id: 'ECU', name: 'Ecuador', flag: '🇪🇨', group: 'E', rank: 28 },
 
   // Group F
-  { id: 'NED', name: 'Netherlands', flag: '🇳🇱', group: 'F', rank: 7 },
+  { id: 'NED', name: 'Netherlands', flag: '🇳🇱', group: 'F', rank: 8 },
   { id: 'JPN', name: 'Japan', flag: '🇯🇵', group: 'F', rank: 18 },
-  { id: 'SWE', name: 'Sweden', flag: '🇸🇪', group: 'F', rank: 28 },
-  { id: 'TUN', name: 'Tunisia', flag: '🇹🇳', group: 'F', rank: 41 },
+  { id: 'SWE', name: 'Sweden', flag: '🇸🇪', group: 'F', rank: 38 },
+  { id: 'TUN', name: 'Tunisia', flag: '🇹🇳', group: 'F', rank: 45 },
 
   // Group G
-  { id: 'BEL', name: 'Belgium', flag: '🇧🇪', group: 'G', rank: 3 },
-  { id: 'EGY', name: 'Egypt', flag: '🇪🇬', group: 'G', rank: 30 },
+  { id: 'BEL', name: 'Belgium', flag: '🇧🇪', group: 'G', rank: 9 },
+  { id: 'EGY', name: 'Egypt', flag: '🇪🇬', group: 'G', rank: 29 },
   { id: 'IRN', name: 'IR Iran', flag: '🇮🇷', group: 'G', rank: 20 },
-  { id: 'NZL', name: 'New Zealand', flag: '🇳🇿', group: 'G', rank: 104 },
+  { id: 'NZL', name: 'New Zealand', flag: '🇳🇿', group: 'G', rank: 85 },
 
   // Group H
-  { id: 'ESP', name: 'Spain', flag: '🇪🇸', group: 'H', rank: 1 },
-  { id: 'CPV', name: 'Cabo Verde', flag: '🇨🇻', group: 'H', rank: 65 },
-  { id: 'KSA', name: 'Saudi Arabia', flag: '🇸🇦', group: 'H', rank: 57 },
-  { id: 'URU', name: 'Uruguay', flag: '🇺🇾', group: 'H', rank: 14 },
+  { id: 'ESP', name: 'Spain', flag: '🇪🇸', group: 'H', rank: 3 },
+  { id: 'CPV', name: 'Cabo Verde', flag: '🇨🇻', group: 'H', rank: 67 },
+  { id: 'KSA', name: 'Saudi Arabia', flag: '🇸🇦', group: 'H', rank: 61 },
+  { id: 'URU', name: 'Uruguay', flag: '🇺🇾', group: 'H', rank: 16 },
 
   // Group I
   { id: 'FRA', name: 'France', flag: '🇫🇷', group: 'I', rank: 2 },
-  { id: 'SEN', name: 'Senegal', flag: '🇸🇳', group: 'I', rank: 17 },
-  { id: 'IRQ', name: 'Iraq', flag: '🇮🇶', group: 'I', rank: 55 },
-  { id: 'NOR', name: 'Norway', flag: '🇳🇴', group: 'I', rank: 44 },
+  { id: 'SEN', name: 'Senegal', flag: '🇸🇳', group: 'I', rank: 15 },
+  { id: 'IRQ', name: 'Iraq', flag: '🇮🇶', group: 'I', rank: 57 },
+  { id: 'NOR', name: 'Norway', flag: '🇳🇴', group: 'I', rank: 31 },
 
   // Group J
   { id: 'ARG', name: 'Argentina', flag: '🇦🇷', group: 'J', rank: 1 },
-  { id: 'ALG', name: 'Algeria', flag: '🇩🇿', group: 'J', rank: 32 },
-  { id: 'AUT', name: 'Austria', flag: '🇦🇹', group: 'J', rank: 23 },
-  { id: 'JOR', name: 'Jordan', flag: '🇯🇴', group: 'J', rank: 71 },
+  { id: 'ALG', name: 'Algeria', flag: '🇩🇿', group: 'J', rank: 31 },
+  { id: 'AUT', name: 'Austria', flag: '🇦🇹', group: 'J', rank: 21 },
+  { id: 'JOR', name: 'Jordan', flag: '🇯🇴', group: 'J', rank: 63 },
 
   // Group K
-  { id: 'POR', name: 'Portugal', flag: '🇵🇹', group: 'K', rank: 8 },
-  { id: 'COD', name: 'DR Congo', flag: '🇨🇩', group: 'K', rank: 61 },
-  { id: 'UZB', name: 'Uzbekistan', flag: '🇺🇿', group: 'K', rank: 68 },
-  { id: 'COL', name: 'Colombia', flag: '🇨🇴', group: 'K', rank: 9 },
+  { id: 'POR', name: 'Portugal', flag: '🇵🇹', group: 'K', rank: 5 },
+  { id: 'COD', name: 'DR Congo', flag: '🇨🇩', group: 'K', rank: 46 },
+  { id: 'UZB', name: 'Uzbekistan', flag: '🇺🇿', group: 'K', rank: 50 },
+  { id: 'COL', name: 'Colombia', flag: '🇨🇴', group: 'K', rank: 13 },
 
   // Group L
   { id: 'ENG', name: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', group: 'L', rank: 4 },
-  { id: 'CRO', name: 'Croatia', flag: '🇭🇷', group: 'L', rank: 10 },
-  { id: 'GHA', name: 'Ghana', flag: '🇬🇭', group: 'L', rank: 64 },
-  { id: 'PAN', name: 'Panama', flag: '🇵🇦', group: 'L', rank: 43 },
+  { id: 'CRO', name: 'Croatia', flag: '🇭🇷', group: 'L', rank: 11 },
+  { id: 'GHA', name: 'Ghana', flag: '🇬🇭', group: 'L', rank: 73 },
+  { id: 'PAN', name: 'Panama', flag: '🇵🇦', group: 'L', rank: 34 },
 ];
 
 export const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];

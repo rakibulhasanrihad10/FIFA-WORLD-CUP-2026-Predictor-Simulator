@@ -295,7 +295,7 @@ export default function ShareModal({
               Simulated with FIFA World Cup 2026 Predictor
             </p>
             <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-              ⚽ 48 Teams • 104 Matches • Complete Bracket Simulation
+              ⚽ 48 Teams • 104 Matches
             </p>
           </div>
         </div>
@@ -426,7 +426,7 @@ export default function ShareModal({
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Knockout Bracket
+                  Road to the Final
                 </button>
               </div>
 
@@ -454,9 +454,6 @@ export default function ShareModal({
                       alt="Prediction Preview" 
                       className="max-h-full max-w-full rounded-lg object-contain shadow-md border border-slate-900"
                     />
-                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-[8px] text-slate-400 font-extrabold uppercase px-2 py-1 rounded">
-                      Right click / Long press to save
-                    </div>
                   </div>
                 ) : (
                   <button

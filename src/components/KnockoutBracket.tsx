@@ -189,44 +189,106 @@ export default function KnockoutBracket() {
     }
   };
 
+  // Render Mobile Next-Round Proceed Button
+  const renderProceedButton = () => {
+    const r32Matches = [...leftR32, ...rightR32];
+    const r16Matches = [...leftR16, ...rightR16];
+    const qfMatches = [...leftQF, ...rightQF];
+    const sfMatches = [...leftSF, ...rightSF];
+
+    const isR32Complete = r32Matches.every((m) => m !== undefined && m.winnerId !== undefined);
+    const isR16Complete = r16Matches.every((m) => m !== undefined && m.winnerId !== undefined);
+    const isQFComplete = qfMatches.every((m) => m !== undefined && m.winnerId !== undefined);
+    const isSFComplete = sfMatches.every((m) => m !== undefined && m.winnerId !== undefined);
+
+    let nextRound: 'R16' | 'QF' | 'SF' | 'F' | null = null;
+    let buttonText = '';
+
+    if (mobileRound === 'R32' && isR32Complete) {
+      nextRound = 'R16';
+      buttonText = 'Proceed to Round of 16';
+    } else if (mobileRound === 'R16' && isR16Complete) {
+      nextRound = 'QF';
+      buttonText = 'Proceed to Quarterfinals';
+    } else if (mobileRound === 'QF' && isQFComplete) {
+      nextRound = 'SF';
+      buttonText = 'Proceed to Semifinals';
+    } else if (mobileRound === 'SF' && isSFComplete) {
+      nextRound = 'F';
+      buttonText = 'Proceed to Final';
+    }
+
+    if (!nextRound) return null;
+
+    return (
+      <button
+        onClick={() => {
+          setMobileRound(nextRound!);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        className="w-full mt-6 py-3 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.25)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.4)] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 animate-fade-in cursor-pointer"
+      >
+        <span>{buttonText}</span>
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </button>
+    );
+  };
+
   return (
     <div className="w-full flex flex-col gap-6 max-w-full mx-auto py-6 animate-fade-in px-4">
-      {/* Header Info */}
-      <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800/60 flex-shrink-0">
+      {/* Header Info - Sticky Bar */}
+      <div className="sticky top-0 z-30 -mx-4 px-4 pb-3 pt-3 bg-[#060a08]/95 backdrop-blur-md border-b border-slate-800/80 flex flex-col gap-2.5 lg:gap-0">
+      <div className="max-w-7xl mx-auto w-full flex flex-row items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
         <div>
-          <h2 className="text-xl font-black text-white">Knockout Stage Predictions</h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <h2 className="text-base sm:text-lg md:text-xl font-black text-white leading-tight">Knockout Stage Predictions</h2>
+          <p className="hidden md:block text-xs text-slate-400 mt-1">
             Pick winners by clicking on teams. Predictions propagate automatically to the next round.
           </p>
         </div>
         
-        <div className="flex flex-row items-center gap-3 flex-wrap md:flex-nowrap">
-          <button
-            onClick={() => setIsShareModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all shadow-sm cursor-pointer flex-shrink-0 h-[46px]"
-          >
-            <Share2 className="h-4 w-4" />
-            Share
-          </button>
+        <div className="flex flex-row items-center gap-2 sm:gap-3 flex-nowrap w-fit flex-shrink-0">
+          {championId ? (
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all shadow-sm cursor-pointer flex-shrink-0 w-fit h-9 sm:h-[46px] animate-fade-in"
+            >
+              <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+              Share
+            </button>
+          ) : (
+            <div
+              title="Pick your World Cup Champion to unlock sharing"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-lg bg-slate-800/60 border border-slate-700/40 text-slate-500 font-black text-[10px] sm:text-xs uppercase cursor-not-allowed flex-shrink-0 w-fit h-9 sm:h-[46px] select-none"
+            >
+              <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Share
+            </div>
+          )}
 
-          <div className="flex items-center gap-3 bg-[#060a08] px-4 py-2.5 rounded-lg border border-[#22c55e]/15 flex-shrink-0 h-[46px]">
+          <div className="flex items-center gap-2 sm:gap-3 bg-[#060a08] px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-lg border border-[#22c55e]/15 flex-shrink-0 w-fit h-9 sm:h-[46px]">
             <div className="text-right">
-              <div className="text-[10px] uppercase font-bold text-slate-500">Knockout Progress</div>
-              <div className="text-sm font-black text-white">
+              <div className="text-[8px] sm:text-[10px] uppercase font-bold text-slate-500 leading-tight">Knockout Progress</div>
+              <div className="text-[11px] sm:text-sm font-black text-white leading-tight">
                 {completedKnockouts} <span className="text-slate-700">/</span> {knockoutMatches.length} Matches
               </div>
             </div>
-            <div className="h-8 w-px bg-slate-800" />
-            <div className="text-xs text-emerald-400 font-extrabold flex items-center gap-1.5">
-              <Trophy className="h-4 w-4 text-[#fbbf24] animate-bounce" />
-              Find your Champion!
+            <div className="h-5 sm:h-8 w-px bg-slate-800" />
+            <div className="text-[10px] sm:text-xs text-emerald-400 font-extrabold flex items-center gap-1 sm:gap-1.5">
+              <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#fbbf24] animate-bounce flex-shrink-0" />
+              <span className="hidden sm:inline">Find your Champion!</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MOBILE ROUND NAVIGATION TABS */}
-      <div className="flex lg:hidden bg-slate-900/50 p-1.5 rounded-xl border border-slate-800/80 gap-1.5 w-full select-none">
+      {/* MOBILE ROUND NAVIGATION TABS (Inside sticky wrapper so they stick too) */}
+      <div className="flex lg:hidden bg-slate-900/50 p-1.5 rounded-xl border border-slate-800/80 gap-1.5 w-full select-none max-w-7xl mx-auto">
         {(['R32', 'R16', 'QF', 'SF', 'F'] as const).map((r) => {
           const isActive = mobileRound === r;
           const label = r === 'F' ? 'Final' : r === 'SF' ? 'Semis' : r === 'QF' ? 'Quarters' : r;
@@ -244,6 +306,7 @@ export default function KnockoutBracket() {
             </button>
           );
         })}
+      </div>
       </div>
 
       {/* MOBILE VERTICAL MATCH LIST */}
@@ -264,6 +327,7 @@ export default function KnockoutBracket() {
             <MatchCard match={match} onSelectWinner={selectWinner} compact={false} />
           </div>
         ))}
+        {renderProceedButton()}
       </div>
 
       {/* DESKTOP FULL BRACKET BOARD VIEW (Rendered off-screen on mobile to allow image export) */}
@@ -321,7 +385,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 1: LEFT R32 */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R32 - Left</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R32 - Left</div>
             <div className="flex-1 flex flex-col justify-around">
               {leftR32.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -333,7 +397,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 2: LEFT R16 */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R16 - Left</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R16 - Left</div>
             <div className="flex-1 flex flex-col justify-around">
               {leftR16.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -345,7 +409,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 3: LEFT QF */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Quarters - Left</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Quarters - Left</div>
             <div className="flex-1 flex flex-col justify-around">
               {leftQF.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -357,7 +421,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 4: LEFT SF */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Semis - Left</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Semis - Left</div>
             <div className="flex-1 flex flex-col justify-around">
               {leftSF.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -369,7 +433,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 5: CENTER FINAL */}
           <div className="w-40 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">The Final</div>
+            <div className="text-center text-xs uppercase font-black text-amber-400 mb-4 tracking-widest border-b border-amber-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">The Final</div>
             <div className="flex-1 flex flex-col justify-center items-center gap-6 relative z-10">
               <div className="bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 justify-center mb-1 flex-shrink-0">
                 <Trophy className="h-3 w-3" />
@@ -380,7 +444,7 @@ export default function KnockoutBracket() {
                 <MatchCard id={`match-card-${finalMatch.id}`} match={finalMatch} onSelectWinner={selectWinner} compact={true} />
               </div>
 
-              <div className="text-center max-w-[160px] text-[9px] text-slate-500 font-medium leading-relaxed select-none flex-shrink-0">
+              <div className="text-center max-w-[160px] text-[9px] text-slate-500 font-medium leading-relaxed select-none flex-shrink-0 is-exporting-hidden">
                 Pick the final champion!
               </div>
             </div>
@@ -388,7 +452,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 6: RIGHT SF */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Semis - Right</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Semis - Right</div>
             <div className="flex-1 flex flex-col justify-around">
               {rightSF.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -400,7 +464,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 7: RIGHT QF */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Quarters - Right</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">Quarters - Right</div>
             <div className="flex-1 flex flex-col justify-around">
               {rightQF.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -412,7 +476,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 8: RIGHT R16 */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R16 - Right</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R16 - Right</div>
             <div className="flex-1 flex flex-col justify-around">
               {rightR16.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
@@ -424,7 +488,7 @@ export default function KnockoutBracket() {
 
           {/* COLUMN 9: RIGHT R32 */}
           <div className="w-36 flex-shrink-0 h-full flex flex-col">
-            <div className="text-center text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest border-b border-slate-900 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R32 - Right</div>
+            <div className="text-center text-xs uppercase font-black text-emerald-400 mb-4 tracking-widest border-b border-emerald-500/20 pb-2 flex-shrink-0 h-8 flex items-center justify-center">R32 - Right</div>
             <div className="flex-1 flex flex-col justify-around">
               {rightR32.map((match) => (
                 <div key={match.id} className="w-36 relative z-10">
