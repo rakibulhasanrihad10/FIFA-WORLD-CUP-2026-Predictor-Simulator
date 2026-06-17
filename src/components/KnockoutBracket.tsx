@@ -32,9 +32,6 @@ export default function KnockoutBracket() {
   const knockoutMatches = matches.filter((m) => m.type === 'knockout');
   const completedKnockouts = knockoutMatches.filter((m) => m.winnerId !== undefined).length;
 
-  // Mobile navigation round state
-  const [mobileRound, setMobileRound] = React.useState<'R32' | 'R16' | 'QF' | 'SF' | 'F'>('R32');
-
   // Define coordinate state for desktop overlay lines
   const [coords, setCoords] = React.useState<
     Record<string, { leftX: number; rightX: number; y: number }>
@@ -173,7 +170,7 @@ export default function KnockoutBracket() {
 
   // Filter matches to display inside mobile list
   const getMobileMatches = () => {
-    switch (mobileRound) {
+    switch (step) {
       case 'R32':
         return [...leftR32, ...rightR32];
       case 'R16':
@@ -182,10 +179,10 @@ export default function KnockoutBracket() {
         return [...leftQF, ...rightQF];
       case 'SF':
         return [...leftSF, ...rightSF];
-      case 'F':
+      case 'final':
         return [finalMatch];
       default:
-        return [];
+        return [...leftR32, ...rightR32];
     }
   };
 
@@ -201,29 +198,29 @@ export default function KnockoutBracket() {
     const isQFComplete = qfMatches.every((m) => m !== undefined && m.winnerId !== undefined);
     const isSFComplete = sfMatches.every((m) => m !== undefined && m.winnerId !== undefined);
 
-    let nextRound: 'R16' | 'QF' | 'SF' | 'F' | null = null;
+    let nextStep: 'R16' | 'QF' | 'SF' | 'final' | null = null;
     let buttonText = '';
 
-    if (mobileRound === 'R32' && isR32Complete) {
-      nextRound = 'R16';
+    if (step === 'R32' && isR32Complete) {
+      nextStep = 'R16';
       buttonText = 'Proceed to Round of 16';
-    } else if (mobileRound === 'R16' && isR16Complete) {
-      nextRound = 'QF';
+    } else if (step === 'R16' && isR16Complete) {
+      nextStep = 'QF';
       buttonText = 'Proceed to Quarterfinals';
-    } else if (mobileRound === 'QF' && isQFComplete) {
-      nextRound = 'SF';
+    } else if (step === 'QF' && isQFComplete) {
+      nextStep = 'SF';
       buttonText = 'Proceed to Semifinals';
-    } else if (mobileRound === 'SF' && isSFComplete) {
-      nextRound = 'F';
+    } else if (step === 'SF' && isSFComplete) {
+      nextStep = 'final';
       buttonText = 'Proceed to Final';
     }
 
-    if (!nextRound) return null;
+    if (!nextStep) return null;
 
     return (
       <button
         onClick={() => {
-          setMobileRound(nextRound!);
+          setStep(nextStep!);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         className="w-full mt-6 py-3 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.25)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.4)] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 animate-fade-in cursor-pointer"
@@ -240,7 +237,7 @@ export default function KnockoutBracket() {
   return (
     <div className="w-full flex flex-col gap-6 max-w-full mx-auto py-6 animate-fade-in px-4">
       {/* Header Info - Sticky Bar */}
-      <div className="sticky top-0 z-30 -mx-4 px-4 pb-3 pt-3 bg-[#060a08]/95 backdrop-blur-md border-b border-slate-800/80 flex flex-col gap-2.5 lg:gap-0">
+      <div className="sticky top-0 z-30 -mx-4 px-4 pb-3 pt-3 bg-[#060a08]/95 backdrop-blur-md border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto w-full flex flex-row items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
         <div>
           <h2 className="text-base sm:text-lg md:text-xl font-black text-white leading-tight">Knockout Stage Predictions</h2>
@@ -286,27 +283,6 @@ export default function KnockoutBracket() {
           </div>
         </div>
       </div>
-
-      {/* MOBILE ROUND NAVIGATION TABS (Inside sticky wrapper so they stick too) */}
-      <div className="flex lg:hidden bg-slate-900/50 p-1.5 rounded-xl border border-slate-800/80 gap-1.5 w-full select-none max-w-7xl mx-auto">
-        {(['R32', 'R16', 'QF', 'SF', 'F'] as const).map((r) => {
-          const isActive = mobileRound === r;
-          const label = r === 'F' ? 'Final' : r === 'SF' ? 'Semis' : r === 'QF' ? 'Quarters' : r;
-          return (
-            <button
-              key={r}
-              onClick={() => setMobileRound(r)}
-              className={`flex-1 py-2.5 text-center text-xs font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-emerald-500 text-slate-950 shadow-md transform scale-[1.02]'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
       </div>
 
       {/* MOBILE VERTICAL MATCH LIST */}
@@ -314,11 +290,11 @@ export default function KnockoutBracket() {
         <div className="flex items-center gap-2 border-b border-slate-800/80 pb-2 px-1 mb-2">
           <Calendar className="h-4 w-4 text-emerald-400" />
           <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            {mobileRound === 'R32' && 'Round of 32 Matches'}
-            {mobileRound === 'R16' && 'Round of 16 Matches'}
-            {mobileRound === 'QF' && 'Quarterfinals'}
-            {mobileRound === 'SF' && 'Semifinals'}
-            {mobileRound === 'F' && 'The World Cup Final'}
+            {step === 'R32' && 'Round of 32 Matches'}
+            {step === 'R16' && 'Round of 16 Matches'}
+            {step === 'QF' && 'Quarterfinals'}
+            {step === 'SF' && 'Semifinals'}
+            {step === 'final' && 'The World Cup Final'}
           </span>
         </div>
         {getMobileMatches().map((match) => (

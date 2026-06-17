@@ -97,7 +97,7 @@ export default function Qualification() {
   return (
     <div className="w-full flex flex-col gap-8 max-w-7xl mx-auto px-4 py-8 animate-fade-in">
       {/* Page Title */}
-      <div className="text-center max-w-2xl mx-auto flex flex-col items-center gap-2.5">
+      <div className="text-center max-w-4xl mx-auto flex flex-col items-center gap-2.5">
         <div className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest">
           Group Stage Concluded
         </div>
