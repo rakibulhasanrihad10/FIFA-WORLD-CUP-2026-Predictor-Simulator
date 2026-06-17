@@ -3,12 +3,6 @@ import { persist } from 'zustand/middleware';
 import { Team, Match, TeamStanding, TournamentStep } from '../types/tournament';
 import { TEAMS, GROUPS, generateGroupMatches, KNOCKOUT_METADATA } from '../data/initialData';
 
-const triggerHaptic = () => {
-  if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.vibrate) {
-    navigator.vibrate(15);
-  }
-};
-
 interface TournamentState {
   step: TournamentStep;
   matches: Match[];
@@ -175,7 +169,6 @@ export const useTournamentStore = create<TournamentState>()(
       setBrandingDetails: (userName, userAvatar) => set({ userName, userAvatar }),
 
       selectWinner: (matchId, winnerId) => {
-        triggerHaptic();
         const { matches, standings, step } = get();
 
         // Handle Group Stage Winner Selection
@@ -215,7 +208,6 @@ export const useTournamentStore = create<TournamentState>()(
       },
 
       quickRankGroup: (groupId, teamIdsInOrder) => {
-        triggerHaptic();
         const { matches, standings } = get();
         const t1 = teamIdsInOrder[0];
         const t2 = teamIdsInOrder[1];
@@ -380,7 +372,6 @@ export const useTournamentStore = create<TournamentState>()(
       },
       
       toggleThirdPlaceQualifier: (teamId) => {
-        triggerHaptic();
         const { qualifiedTeams, standings, matches } = get();
         let updatedThirds = [...qualifiedTeams.thirdPlaces];
         
@@ -457,7 +448,6 @@ export const useTournamentStore = create<TournamentState>()(
       },
 
       autoPredictAllGroupsByRank: () => {
-        triggerHaptic();
         const { matches, standings } = get();
         const updatedMatches = [...matches];
         const updatedStandings = { ...standings };
@@ -505,7 +495,6 @@ export const useTournamentStore = create<TournamentState>()(
       },
 
       autoSelectThirdPlacesByRank: () => {
-        triggerHaptic();
         const { standings, qualifiedTeams, matches } = get();
         
         // 1. Get current 3rd place team ID from each of the 12 groups

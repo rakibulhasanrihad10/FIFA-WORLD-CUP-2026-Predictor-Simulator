@@ -55,6 +55,7 @@ export default function MatchCard({ match, onSelectWinner, lightTheme = false, c
       <button
         disabled={!isPredictable}
         onClick={() => handleSelect(team.id)}
+        data-haptic="winner"
         className={`w-full flex items-center justify-between rounded-lg text-left transition-all duration-200 cursor-pointer ${
           compact ? 'p-1.5' : 'p-3'
         } ${

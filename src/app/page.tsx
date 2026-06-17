@@ -9,6 +9,8 @@ import Qualification from '../components/Qualification';
 import KnockoutBracket from '../components/KnockoutBracket';
 import ChampionScreen from '../components/ChampionScreen';
 
+import { triggerHaptic } from '../utils/haptic';
+
 export default function Home() {
   const { step } = useTournamentStore();
   const [mounted, setMounted] = useState(false);
@@ -16,6 +18,21 @@ export default function Home() {
   // Prevent Next.js hydration errors from localStorage persistence
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Global Haptic Feedback Listener
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Capture elements with native buttons, button role, links, or cursor pointer
+      const clickable = target.closest('button, [role="button"], a, .cursor-pointer');
+      if (clickable) {
+        const hapticType = clickable.getAttribute('data-haptic') === 'winner' ? 'winner' : 'click';
+        triggerHaptic(hapticType);
+      }
+    };
+    document.addEventListener('click', handleGlobalClick, { capture: true });
+    return () => document.removeEventListener('click', handleGlobalClick, { capture: true });
   }, []);
 
   // Scroll to top of the page when navigating between screens

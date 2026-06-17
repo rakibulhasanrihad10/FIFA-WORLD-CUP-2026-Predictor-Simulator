@@ -7,6 +7,7 @@ import MatchCard from './MatchCard';
 import StandingsTable from './StandingsTable';
 import { GROUPS, TEAMS, getFlagUrl } from '../data/initialData';
 import { CheckCircle2, ChevronRight, Play, Sparkles } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptic';
 
 export default function GroupStage() {
   const { matches, standings, selectWinner, quickRankGroup, clearGroupPredictions, advanceToKnockouts, autoPredictAllGroupsByRank, reset } = useTournamentStore();
@@ -83,10 +84,6 @@ export default function GroupStage() {
   const handlePlace = (teamId: string) => {
     if (slots.includes(teamId)) return;
 
-    if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(15);
-    }
-
     const nextIdx = slots.indexOf(null);
     if (nextIdx !== -1) {
       const newSlots = [...slots];
@@ -96,15 +93,12 @@ export default function GroupStage() {
       // Lock in standings once all 4 slots are filled
       if (!newSlots.includes(null)) {
         quickRankGroup(activeGroup, newSlots as string[]);
+        triggerHaptic('winner');
       }
     }
   };
 
   const handleRemove = (index: number) => {
-    if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(15);
-    }
-
     const newSlots = [...slots];
     newSlots[index] = null;
     setSlots(newSlots);
