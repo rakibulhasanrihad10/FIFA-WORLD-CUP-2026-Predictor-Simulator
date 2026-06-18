@@ -4,6 +4,7 @@ import React from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { Trophy, HelpCircle, Users, Sparkles, MapPin } from 'lucide-react';
 import { GROUPS, TEAMS, getFlagUrl } from '../data/initialData';
+import PathToFinal from './PathToFinal';
 
 export default function HomeScreen() {
   const { setStep } = useTournamentStore();
@@ -154,6 +155,10 @@ export default function HomeScreen() {
           </div>
         </div>
       </div>
+
+
+      {/* PATH TO THE FINAL SIMULATOR */}
+      <PathToFinal />
 
       {/* TOURNAMENT GROUPS GRID (NEW WORLD CUP VIBE) */}
       <div className="flex flex-col gap-6 animate-fade-in mt-4">

@@ -111,6 +111,21 @@ body {
   animation: pulse-glow 2s infinite ease-in-out;
 }
 
+@keyframes border-glow {
+  0%, 100% {
+    border-color: rgba(56, 189, 248, 0.25);
+    box-shadow: 0 0 6px 0px rgba(56, 189, 248, 0.08);
+  }
+  50% {
+    border-color: rgba(56, 189, 248, 0.7);
+    box-shadow: 0 0 16px 2.5px rgba(56, 189, 248, 0.32);
+  }
+}
+
+.animate-border-glow {
+  animation: border-glow 2s infinite ease-in-out;
+}
+
 .bg-grass-pitch-realistic {
   background-image: 
     radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 65%),
