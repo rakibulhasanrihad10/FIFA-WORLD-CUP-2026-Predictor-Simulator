@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { TEAMS, KNOCKOUT_METADATA, getFlagUrl, getOfficialMatchNumber } from '../data/initialData';
 import { Team, TeamStanding } from '../types/tournament';
-import { Search, Sparkles, Trophy, RotateCcw, AlertCircle, Info, Check, Share2, User } from 'lucide-react';
+import { Search, Sparkles, Trophy, RotateCcw, AlertCircle, Info, Check, Share2, User, Lock } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 interface TimelineStage {
@@ -274,6 +274,31 @@ export default function PathToFinal() {
   const isPathComplete = siblingMatchIds.length > 0 && siblingMatchIds.every((id) => !!pathPredictions[id]);
   const activePredictMatchId = siblingMatchIds.find((id) => !pathPredictions[id]);
 
+  // Helper to check if a prediction is unlocked (all previous sibling predictions are completed)
+  const isPredictionUnlocked = (opponentMatchId: string): boolean => {
+    const idx = siblingMatchIds.indexOf(opponentMatchId);
+    if (idx <= 0) return true; // First one is always unlocked
+    for (let i = 0; i < idx; i++) {
+      if (!pathPredictions[siblingMatchIds[i]]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Helper to get the stage label representing the prediction target
+  const getStageLabelForMatchId = (matchId: string): string => {
+    const meta = KNOCKOUT_METADATA.find(m => m.id === matchId);
+    if (!meta) return 'Previous Stage';
+    const stageMap: Record<string, string> = {
+      R32: 'Round of 16',
+      R16: 'Quarter-finals',
+      QF: 'Semi-finals',
+      SF: 'The Final'
+    };
+    return stageMap[meta.stage] || meta.stage;
+  };
+
   // Helper: Check if group stage standings are active
   const isGroupStageActive = (): boolean => {
     return Object.values(standings).some((groupStandings) =>
@@ -527,10 +552,24 @@ export default function PathToFinal() {
   const timelineStages = generateTimelineStages();
 
   const handlePredict = (matchId: string, teamId: string) => {
-    setPathPredictions((prev) => ({
-      ...prev,
-      [matchId]: teamId,
-    }));
+    const idx = siblingMatchIds.indexOf(matchId);
+    if (idx === -1) return;
+
+    // Enforce sequential prediction order: previous stages must be predicted
+    for (let i = 0; i < idx; i++) {
+      if (!pathPredictions[siblingMatchIds[i]]) {
+        return;
+      }
+    }
+
+    setPathPredictions((prev) => {
+      const nextPredictions = { ...prev, [matchId]: teamId };
+      // Clear subsequent predictions if a previous prediction changes
+      for (let i = idx + 1; i < siblingMatchIds.length; i++) {
+        delete nextPredictions[siblingMatchIds[i]];
+      }
+      return nextPredictions;
+    });
   };
 
   // Filter teams for autocomplete search
@@ -571,23 +610,23 @@ export default function PathToFinal() {
         {/* Controls (Switcher & Actions) */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto self-start lg:self-center lg:justify-end">
           {/* Switcher */}
-          <div className="h-9 sm:h-10 flex items-center gap-2 bg-slate-950/60 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
+          <div className="h-9 sm:h-10 flex items-center gap-1.5 bg-transparent p-0 w-full sm:w-auto">
             <button
               onClick={() => setViewMode('timeline')}
-              className={`flex-1 h-full flex items-center justify-center px-3 sm:px-5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border text-center whitespace-nowrap ${
+              className={`flex-1 h-full flex items-center justify-center px-3 sm:px-5 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border text-center whitespace-nowrap ${
                 viewMode === 'timeline'
-                  ? 'bg-slate-800 text-slate-200 border-slate-700/60 shadow-sm'
-                  : 'text-slate-400 hover:text-white border-transparent'
+                  ? 'bg-transparent text-slate-300 border-slate-800'
+                  : 'bg-transparent text-slate-500 hover:text-slate-400 border-transparent'
               }`}
             >
               Timeline View
             </button>
             <button
               onClick={() => setViewMode('bracket')}
-              className={`flex-1 h-full flex items-center justify-center px-3 sm:px-5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border text-center whitespace-nowrap ${
+              className={`flex-1 h-full flex items-center justify-center px-3 sm:px-5 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border text-center whitespace-nowrap ${
                 viewMode === 'bracket'
-                  ? 'bg-slate-800 text-slate-200 border-slate-700/60 shadow-sm'
-                  : 'text-slate-400 hover:text-white border-transparent'
+                  ? 'bg-transparent text-slate-300 border-slate-800'
+                  : 'bg-transparent text-slate-500 hover:text-slate-400 border-transparent'
               }`}
             >
               Tournament Bracket View
@@ -790,7 +829,7 @@ export default function PathToFinal() {
                       {/* Match Card Container */}
                       <div className="flex-1 flex flex-col gap-3.5">
                         {/* Main Fixture Display */}
-                        <div className="flex flex-col gap-3 glass-panel-clear border-slate-900 bg-slate-950/20 p-4.5 rounded-2xl relative shadow-md hover:border-slate-800 transition-colors">
+                        <div className="flex flex-col gap-3 glass-panel-clear border-slate-900 bg-slate-950/20 p-4 sm:p-5 rounded-2xl relative shadow-md hover:border-slate-800 transition-colors">
                           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                             {/* Left Contender: Our Team */}
                             <div className="flex items-center gap-3 w-full md:w-5/12 bg-gradient-to-r from-emerald-950/25 to-slate-950/10 border border-emerald-500/20 p-2.5 rounded-xl">
@@ -842,61 +881,77 @@ export default function PathToFinal() {
                         </div>
 
                         {/* Dedicated Interactive Prediction Card */}
-                        {stage.isInteractive && contenderA && contenderB && (
-                          <div className={`flex flex-col gap-3 bg-slate-950/40 border rounded-2xl p-4.5 shadow-sm animate-fade-in ${
-                            activePredictMatchId && stage.opponentMatchId === activePredictMatchId
-                              ? 'animate-border-glow border-sky-500/35 shadow-[0_0_15px_rgba(56,189,248,0.15)]'
-                              : 'border-slate-800'
-                          }`}>
-                            <div className="flex items-center justify-center gap-1.5 text-[9px] min-[380px]:text-[10px] sm:text-xs font-black tracking-wider text-slate-400 uppercase whitespace-nowrap text-center">
-                              <span>Predict Match {getOfficialMatchNumber(stage.opponentMatchId!)} Winner</span>
-                              <span className="text-[#FFD700] font-bold normal-case">
-                                (Sets stage opponent)
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2.5">
-                              {/* Contender A Button */}
-                              <button
-                                onClick={() => handlePredict(stage.opponentMatchId!, contenderA.id)}
-                                className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all text-left cursor-pointer ${
-                                  isPredictionASelected
-                                    ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-[0_0_12px_rgba(56,189,248,0.1)]'
-                                    : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 hover:border-slate-800'
-                                }`}
-                              >
-                                <img
-                                  src={getFlagUrl(contenderA.id)}
-                                  alt={contenderA.name}
-                                  className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-950"
-                                />
-                                <span className="text-xs font-extrabold truncate flex-1">{contenderA.name}</span>
-                                {isPredictionASelected && (
-                                  <Check className="h-3.5 w-3.5 text-sky-400 flex-shrink-0" />
-                                )}
-                              </button>
+                        {stage.isInteractive && contenderA && contenderB && (() => {
+                          const unlocked = isPredictionUnlocked(stage.opponentMatchId!);
+                          return (
+                            <div className={`flex flex-col gap-3 bg-slate-950/40 border rounded-2xl p-4 sm:p-5 shadow-sm animate-fade-in transition-all duration-300 ${
+                              !unlocked
+                                ? 'border-slate-900/60 opacity-40 select-none'
+                                : activePredictMatchId && stage.opponentMatchId === activePredictMatchId
+                                ? 'animate-border-glow border-sky-500/35 shadow-[0_0_15px_rgba(56,189,248,0.15)]'
+                                : 'border-slate-800'
+                            }`}>
+                              {!unlocked ? (
+                                <div className="flex flex-col items-center justify-center py-2 text-slate-500 gap-1.5">
+                                  <Lock className="h-4 w-4 text-amber-500/70" />
+                                  <span className="text-[10px] font-black uppercase tracking-wider text-center">
+                                    Predict {getStageLabelForMatchId(siblingMatchIds[siblingMatchIds.indexOf(stage.opponentMatchId!) - 1])} First
+                                  </span>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-[9px] min-[380px]:text-[10px] sm:text-xs font-black tracking-wider text-slate-400 uppercase text-center">
+                                    <span>Predict Match {getOfficialMatchNumber(stage.opponentMatchId!)} Winner</span>
+                                    <span className="text-[#FFD700] font-bold normal-case sm:whitespace-nowrap">
+                                      (Sets stage opponent)
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2.5">
+                                    {/* Contender A Button */}
+                                    <button
+                                      onClick={() => handlePredict(stage.opponentMatchId!, contenderA.id)}
+                                      className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all text-left cursor-pointer ${
+                                        isPredictionASelected
+                                          ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-[0_0_12px_rgba(56,189,248,0.1)]'
+                                          : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 hover:border-slate-800'
+                                      }`}
+                                    >
+                                      <img
+                                        src={getFlagUrl(contenderA.id)}
+                                        alt={contenderA.name}
+                                        className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-950"
+                                      />
+                                      <span className="text-xs font-extrabold truncate flex-1">{contenderA.name}</span>
+                                      {isPredictionASelected && (
+                                        <Check className="h-3.5 w-3.5 text-sky-400 flex-shrink-0" />
+                                      )}
+                                    </button>
 
-                              {/* Contender B Button */}
-                              <button
-                                onClick={() => handlePredict(stage.opponentMatchId!, contenderB.id)}
-                                className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all text-left cursor-pointer ${
-                                  isPredictionBSelected
-                                    ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-[0_0_12px_rgba(56,189,248,0.1)]'
-                                    : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 hover:border-slate-800'
-                                }`}
-                              >
-                                <img
-                                  src={getFlagUrl(contenderB.id)}
-                                  alt={contenderB.name}
-                                  className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-950"
-                                />
-                                <span className="text-xs font-extrabold truncate flex-1">{contenderB.name}</span>
-                                {isPredictionBSelected && (
-                                  <Check className="h-3.5 w-3.5 text-sky-400 flex-shrink-0" />
-                                )}
-                              </button>
+                                    {/* Contender B Button */}
+                                    <button
+                                      onClick={() => handlePredict(stage.opponentMatchId!, contenderB.id)}
+                                      className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all text-left cursor-pointer ${
+                                        isPredictionBSelected
+                                          ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-[0_0_12px_rgba(56,189,248,0.1)]'
+                                          : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 hover:border-slate-800'
+                                      }`}
+                                    >
+                                      <img
+                                        src={getFlagUrl(contenderB.id)}
+                                        alt={contenderB.name}
+                                        className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-950"
+                                      />
+                                      <span className="text-xs font-extrabold truncate flex-1">{contenderB.name}</span>
+                                      {isPredictionBSelected && (
+                                        <Check className="h-3.5 w-3.5 text-sky-400 flex-shrink-0" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </>
+                              )}
                             </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -936,7 +991,7 @@ export default function PathToFinal() {
                         )}
                         
                         {/* Bracket Node Card */}
-                        <div className={`flex flex-col gap-3.5 w-64 bg-slate-950/70 border p-4.5 rounded-2xl relative select-none transition-all duration-300 hover:scale-[1.02] ${
+                        <div className={`flex flex-col gap-3.5 w-64 bg-slate-950/70 border p-4 sm:p-5 rounded-2xl relative select-none transition-all duration-300 hover:scale-[1.02] ${
                           activePredictMatchId && stage.opponentMatchId === activePredictMatchId
                             ? 'animate-border-glow border-sky-500/35 shadow-[0_0_20px_rgba(56,189,248,0.15)]'
                             : isFinal 
@@ -1009,35 +1064,49 @@ export default function PathToFinal() {
                           </div>
 
                           {/* Interactive Prediction Panel */}
-                          {stage.isInteractive && contenderA && contenderB && (
-                            <div className="mt-3 pt-3 border-t border-slate-900 flex flex-col gap-2">
-                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider text-center">Predict Match Winner</span>
-                              <div className="grid grid-cols-2 gap-1.5">
-                                <button
-                                  onClick={() => handlePredict(stage.opponentMatchId!, contenderA.id)}
-                                  className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer ${
-                                    isPredictionASelected
-                                      ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-sm'
-                                      : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-900'
-                                  }`}
-                                >
-                                  <img src={getFlagUrl(contenderA.id)} className="w-4 h-2.5 object-cover rounded-sm" />
-                                  <span className="truncate text-center w-full">{contenderA.name}</span>
-                                </button>
-                                <button
-                                  onClick={() => handlePredict(stage.opponentMatchId!, contenderB.id)}
-                                  className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer ${
-                                    isPredictionBSelected
-                                      ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-sm'
-                                      : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-900'
-                                  }`}
-                                >
-                                  <img src={getFlagUrl(contenderB.id)} className="w-4 h-2.5 object-cover rounded-sm" />
-                                  <span className="truncate text-center w-full">{contenderB.name}</span>
-                                </button>
+                          {stage.isInteractive && contenderA && contenderB && (() => {
+                            const unlocked = isPredictionUnlocked(stage.opponentMatchId!);
+                            return (
+                              <div className="mt-3 pt-3 border-t border-slate-900 flex flex-col gap-2 transition-all duration-300">
+                                {!unlocked ? (
+                                  <div className="flex items-center justify-center gap-1 py-1.5 text-slate-500">
+                                    <Lock className="h-3 w-3 text-amber-500/70" />
+                                    <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-wider text-center">
+                                      Predict {getStageLabelForMatchId(siblingMatchIds[siblingMatchIds.indexOf(stage.opponentMatchId!) - 1])} First
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider text-center">Predict Match Winner</span>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                      <button
+                                        onClick={() => handlePredict(stage.opponentMatchId!, contenderA.id)}
+                                        className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer ${
+                                          isPredictionASelected
+                                            ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-sm'
+                                            : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-900'
+                                        }`}
+                                      >
+                                        <img src={getFlagUrl(contenderA.id)} className="w-4 h-2.5 object-cover rounded-sm" />
+                                        <span className="truncate text-center w-full">{contenderA.name}</span>
+                                      </button>
+                                      <button
+                                        onClick={() => handlePredict(stage.opponentMatchId!, contenderB.id)}
+                                        className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer ${
+                                          isPredictionBSelected
+                                            ? 'bg-sky-500/10 border-sky-500/40 text-white shadow-sm'
+                                            : 'bg-slate-950/60 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-900'
+                                        }`}
+                                      >
+                                        <img src={getFlagUrl(contenderB.id)} className="w-4 h-2.5 object-cover rounded-sm" />
+                                        <span className="truncate text-center w-full">{contenderB.name}</span>
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                            </div>
-                          )}
+                            );
+                          })()}
                         </div>
                       </div>
                       
