@@ -239,8 +239,8 @@ export default function KnockoutBracket() {
       {/* Header Info - Sticky Bar */}
       <div className="sticky top-0 z-30 -mx-4 px-4 pb-3 pt-3 bg-[#060a08]/95 backdrop-blur-md border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto w-full flex flex-row items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
-        <div>
-          <h2 className="text-base sm:text-lg md:text-xl font-black text-white leading-tight">Knockout Stage Predictions</h2>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-[13px] sm:text-base md:text-lg lg:text-xl font-black text-white leading-tight line-clamp-2 break-words">Knockout Stage Predictions</h2>
           <p className="hidden md:block text-xs text-slate-400 mt-1">
             Pick winners by clicking on teams. Predictions propagate automatically to the next round.
           </p>
@@ -477,9 +477,12 @@ export default function KnockoutBracket() {
           </div> {/* Closing INNER COLUMNS WRAPPER */}
 
           {/* SUBTLE WATERMARK IN BOTTOM-CENTER */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none select-none text-center">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none select-none text-center flex flex-col items-center gap-1">
             <span className="text-xs font-black tracking-widest text-[#f2f7f5]/20 uppercase">
               ⚽ FIFA WORLD CUP 2026 PREDICTOR SIMULATOR
+            </span>
+            <span className="text-[10px] font-bold text-[#f2f7f5]/35 uppercase tracking-widest">
+              Developed by Rakib • A die-hard Messi fan
             </span>
           </div>
         </div>

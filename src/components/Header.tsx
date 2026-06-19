@@ -7,6 +7,20 @@ import { TournamentStep } from '../types/tournament';
 
 export default function Header() {
   const { step, setStep, matches, reset } = useTournamentStore();
+  const navRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    if (navRef.current) {
+      const activeElement = navRef.current.querySelector('[data-active="true"]');
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      }
+    }
+  }, [step]);
 
   const totalMatches = matches.length;
   const completedPredictions = matches.filter((m) => m.winnerId !== undefined).length;
@@ -88,8 +102,12 @@ export default function Header() {
             className="flex items-center gap-2 cursor-pointer group"
             onClick={() => setStep('home')}
           >
-            <div className="bg-[#fbbf24]/10 p-2 rounded-lg border border-[#fbbf24]/30 group-hover:border-[#fbbf24]/60 transition-colors">
-              <Trophy className="h-6 w-6 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.3)] animate-pulse" />
+            <div className="bg-[#fbbf24]/10 p-2 rounded-lg border border-[#fbbf24]/30 group-hover:border-[#fbbf24]/60 transition-colors flex items-center justify-center">
+              <img
+                src="/world_cup_trophy.png"
+                alt="World Cup Trophy Logo"
+                className="h-6 w-6 object-contain animate-pulse select-none filter drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]"
+              />
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-wider uppercase text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-emerald-100 to-emerald-400">
@@ -113,7 +131,7 @@ export default function Header() {
 
         {/* Steps Navigation */}
         {step !== 'home' && step !== 'champion' && (
-          <nav className="flex items-center overflow-x-auto py-1 gap-1.5 max-w-full no-scrollbar">
+          <nav ref={navRef} className="flex items-center overflow-x-auto py-1 gap-1.5 max-w-full no-scrollbar">
             {stepsList.map(({ key, label }) => {
               const active = step === key;
               const accessible = isStepAccessible(key);
@@ -124,6 +142,7 @@ export default function Header() {
                   key={key}
                   disabled={!accessible}
                   onClick={() => setStep(key)}
+                  data-active={active ? 'true' : 'false'}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                     active
                       ? 'bg-emerald-600/90 text-white shadow-md shadow-emerald-900/20 border border-emerald-500/30'

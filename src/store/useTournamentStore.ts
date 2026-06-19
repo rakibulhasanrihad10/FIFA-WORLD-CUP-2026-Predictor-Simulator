@@ -152,6 +152,63 @@ const propagateKnockoutWinner = (matches: Match[], matchId: string, winnerId: st
   return { updatedMatches: updated };
 };
 
+// Helper to dynamically assign the 8 qualified 3rd-placed teams to R32 slots
+// without any team facing an opponent from their own original group.
+const assignThirdPlaces = (thirdPlaceIds: string[]): Record<string, string> => {
+  const slots = [
+    { id: 'R32_1', groups: ['A', 'B', 'C', 'D', 'F'] },
+    { id: 'R32_2', groups: ['C', 'D', 'F', 'G', 'H'] },
+    { id: 'R32_11', groups: ['C', 'E', 'F', 'H', 'I'] },
+    { id: 'R32_12', groups: ['E', 'H', 'I', 'J', 'K'] },
+    { id: 'R32_8', groups: ['A', 'E', 'H', 'I', 'J'] },
+    { id: 'R32_7', groups: ['B', 'E', 'F', 'I', 'J'] },
+    { id: 'R32_15', groups: ['E', 'F', 'G', 'I', 'J'] },
+    { id: 'R32_16', groups: ['D', 'E', 'I', 'J', 'L'] },
+  ];
+
+  const teamsWithGroups = thirdPlaceIds.map(id => {
+    const team = TEAMS.find(t => t.id === id);
+    return { id, group: team ? team.group : '' };
+  });
+
+  const assignment: Record<string, string> = {};
+  const usedTeams = new Set<string>();
+
+  const backtrack = (slotIdx: number): boolean => {
+    if (slotIdx === slots.length) {
+      return true;
+    }
+
+    const slot = slots[slotIdx];
+    for (let i = 0; i < teamsWithGroups.length; i++) {
+      const team = teamsWithGroups[i];
+      if (!usedTeams.has(team.id) && slot.groups.includes(team.group)) {
+        assignment[slot.id] = team.id;
+        usedTeams.add(team.id);
+        
+        if (backtrack(slotIdx + 1)) {
+          return true;
+        }
+        
+        usedTeams.delete(team.id);
+        delete assignment[slot.id];
+      }
+    }
+
+    return false;
+  };
+
+  const success = backtrack(0);
+  
+  if (!success) {
+    slots.forEach((slot, idx) => {
+      assignment[slot.id] = thirdPlaceIds[idx] || '';
+    });
+  }
+
+  return assignment;
+};
+
 export const useTournamentStore = create<TournamentState>()(
   persist(
     (set, get) => ({
@@ -315,23 +372,25 @@ export const useTournamentStore = create<TournamentState>()(
         const findWinner = (group: string) => standings[group][0].teamId;
         const findRunnerUp = (group: string) => standings[group][1].teamId;
 
+        const thirdPlaceAssignments = assignThirdPlaces(bestEightThirdsIds);
+
         const r32Pairings: { id: string; home: string; away: string }[] = [
-          { id: 'R32_1', home: findWinner('E'), away: bestEightThirdsIds[0] || '' }, // Match 75
-          { id: 'R32_2', home: findWinner('I'), away: bestEightThirdsIds[1] || '' }, // Match 78
+          { id: 'R32_1', home: findWinner('E'), away: thirdPlaceAssignments['R32_1'] || '' }, // Match 74
+          { id: 'R32_2', home: findWinner('I'), away: thirdPlaceAssignments['R32_2'] || '' }, // Match 77
           { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
-          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
-          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
-          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
-          { id: 'R32_7', home: findWinner('D'), away: bestEightThirdsIds[5] || '' }, // Match 82
-          { id: 'R32_8', home: findWinner('G'), away: bestEightThirdsIds[4] || '' }, // Match 81
-          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
-          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
-          { id: 'R32_11', home: findWinner('A'), away: bestEightThirdsIds[2] || '' }, // Match 79
-          { id: 'R32_12', home: findWinner('L'), away: bestEightThirdsIds[3] || '' }, // Match 80
-          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
-          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
-          { id: 'R32_15', home: findWinner('B'), away: bestEightThirdsIds[6] || '' }, // Match 85
-          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] || '' }, // Match 88
+          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 75
+          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 83
+          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 84
+          { id: 'R32_7', home: findWinner('D'), away: thirdPlaceAssignments['R32_7'] || '' }, // Match 81
+          { id: 'R32_8', home: findWinner('G'), away: thirdPlaceAssignments['R32_8'] || '' }, // Match 82
+          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 76
+          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 78
+          { id: 'R32_11', home: findWinner('A'), away: thirdPlaceAssignments['R32_11'] || '' }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: thirdPlaceAssignments['R32_12'] || '' }, // Match 80
+          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 86
+          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 88
+          { id: 'R32_15', home: findWinner('B'), away: thirdPlaceAssignments['R32_15'] || '' }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: thirdPlaceAssignments['R32_16'] || '' }, // Match 87
         ];
 
         r32Pairings.forEach((pairing) => {
@@ -393,23 +452,25 @@ export const useTournamentStore = create<TournamentState>()(
         const findWinner = (group: string) => standings[group][0].teamId;
         const findRunnerUp = (group: string) => standings[group][1].teamId;
 
+        const thirdPlaceAssignments = assignThirdPlaces(updatedThirds);
+
         const r32Pairings: { id: string; home: string; away: string }[] = [
-          { id: 'R32_1', home: findWinner('E'), away: updatedThirds[0] || '' }, // Match 75
-          { id: 'R32_2', home: findWinner('I'), away: updatedThirds[1] || '' }, // Match 78
+          { id: 'R32_1', home: findWinner('E'), away: thirdPlaceAssignments['R32_1'] || '' }, // Match 74
+          { id: 'R32_2', home: findWinner('I'), away: thirdPlaceAssignments['R32_2'] || '' }, // Match 77
           { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
-          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
-          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
-          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
-          { id: 'R32_7', home: findWinner('D'), away: updatedThirds[5] || '' }, // Match 82
-          { id: 'R32_8', home: findWinner('G'), away: updatedThirds[4] || '' }, // Match 81
-          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
-          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
-          { id: 'R32_11', home: findWinner('A'), away: updatedThirds[2] || '' }, // Match 79
-          { id: 'R32_12', home: findWinner('L'), away: updatedThirds[3] || '' }, // Match 80
-          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
-          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
-          { id: 'R32_15', home: findWinner('B'), away: updatedThirds[6] || '' }, // Match 85
-          { id: 'R32_16', home: findWinner('K'), away: updatedThirds[7] || '' }, // Match 88
+          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 75
+          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 83
+          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 84
+          { id: 'R32_7', home: findWinner('D'), away: thirdPlaceAssignments['R32_7'] || '' }, // Match 81
+          { id: 'R32_8', home: findWinner('G'), away: thirdPlaceAssignments['R32_8'] || '' }, // Match 82
+          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 76
+          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 78
+          { id: 'R32_11', home: findWinner('A'), away: thirdPlaceAssignments['R32_11'] || '' }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: thirdPlaceAssignments['R32_12'] || '' }, // Match 80
+          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 86
+          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 88
+          { id: 'R32_15', home: findWinner('B'), away: thirdPlaceAssignments['R32_15'] || '' }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: thirdPlaceAssignments['R32_16'] || '' }, // Match 87
         ];
 
         r32Pairings.forEach((pairing) => {
@@ -525,23 +586,25 @@ export const useTournamentStore = create<TournamentState>()(
         const findWinner = (group: string) => standings[group][0].teamId;
         const findRunnerUp = (group: string) => standings[group][1].teamId;
 
+        const thirdPlaceAssignments = assignThirdPlaces(bestEightThirdsIds);
+
         const r32Pairings: { id: string; home: string; away: string }[] = [
-          { id: 'R32_1', home: findWinner('E'), away: bestEightThirdsIds[0] || '' }, // Match 75
-          { id: 'R32_2', home: findWinner('I'), away: bestEightThirdsIds[1] || '' }, // Match 78
+          { id: 'R32_1', home: findWinner('E'), away: thirdPlaceAssignments['R32_1'] || '' }, // Match 74
+          { id: 'R32_2', home: findWinner('I'), away: thirdPlaceAssignments['R32_2'] || '' }, // Match 77
           { id: 'R32_3', home: findRunnerUp('A'), away: findRunnerUp('B') }, // Match 73
-          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 76
-          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 84
-          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 83
-          { id: 'R32_7', home: findWinner('D'), away: bestEightThirdsIds[5] || '' }, // Match 82
-          { id: 'R32_8', home: findWinner('G'), away: bestEightThirdsIds[4] || '' }, // Match 81
-          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 74
-          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 77
-          { id: 'R32_11', home: findWinner('A'), away: bestEightThirdsIds[2] || '' }, // Match 79
-          { id: 'R32_12', home: findWinner('L'), away: bestEightThirdsIds[3] || '' }, // Match 80
-          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 87
-          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 86
-          { id: 'R32_15', home: findWinner('B'), away: bestEightThirdsIds[6] || '' }, // Match 85
-          { id: 'R32_16', home: findWinner('K'), away: bestEightThirdsIds[7] || '' }, // Match 88
+          { id: 'R32_4', home: findWinner('F'), away: findRunnerUp('C') }, // Match 75
+          { id: 'R32_5', home: findRunnerUp('K'), away: findRunnerUp('L') }, // Match 83
+          { id: 'R32_6', home: findWinner('H'), away: findRunnerUp('J') }, // Match 84
+          { id: 'R32_7', home: findWinner('D'), away: thirdPlaceAssignments['R32_7'] || '' }, // Match 81
+          { id: 'R32_8', home: findWinner('G'), away: thirdPlaceAssignments['R32_8'] || '' }, // Match 82
+          { id: 'R32_9', home: findWinner('C'), away: findRunnerUp('F') }, // Match 76
+          { id: 'R32_10', home: findRunnerUp('E'), away: findRunnerUp('I') }, // Match 78
+          { id: 'R32_11', home: findWinner('A'), away: thirdPlaceAssignments['R32_11'] || '' }, // Match 79
+          { id: 'R32_12', home: findWinner('L'), away: thirdPlaceAssignments['R32_12'] || '' }, // Match 80
+          { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 86
+          { id: 'R32_14', home: findWinner('D'), away: findRunnerUp('G') }, // Match 88
+          { id: 'R32_15', home: findWinner('B'), away: thirdPlaceAssignments['R32_15'] || '' }, // Match 85
+          { id: 'R32_16', home: findWinner('K'), away: thirdPlaceAssignments['R32_16'] || '' }, // Match 87
         ];
 
         r32Pairings.forEach((pairing) => {

@@ -3,33 +3,33 @@ import { Team, Match } from '../types/tournament';
 export const TEAMS: Team[] = [
   // Group A
   { id: 'MEX', name: 'Mexico', flag: '🇲🇽', group: 'A', rank: 14 },
-  { id: 'RSA', name: 'South Africa', flag: '🇿🇦', group: 'A', rank: 60 },
   { id: 'KOR', name: 'South Korea', flag: '🇰🇷', group: 'A', rank: 25 },
   { id: 'CZE', name: 'Czechia', flag: '🇨🇿', group: 'A', rank: 40 },
+  { id: 'RSA', name: 'South Africa', flag: '🇿🇦', group: 'A', rank: 60 },
 
   // Group B
-  { id: 'CAN', name: 'Canada', flag: '🇨🇦', group: 'B', rank: 30 },
-  { id: 'BIH', name: 'Bosnia', flag: '🇧🇦', group: 'B', rank: 64 },
-  { id: 'QAT', name: 'Qatar', flag: '🇶🇦', group: 'B', rank: 56 },
   { id: 'SUI', name: 'Switzerland', flag: '🇨🇭', group: 'B', rank: 19 },
+  { id: 'CAN', name: 'Canada', flag: '🇨🇦', group: 'B', rank: 30 },
+  { id: 'QAT', name: 'Qatar', flag: '🇶🇦', group: 'B', rank: 56 },
+  { id: 'BIH', name: 'Bosnia', flag: '🇧🇦', group: 'B', rank: 64 },
 
   // Group C
   { id: 'BRA', name: 'Brazil', flag: '🇧🇷', group: 'C', rank: 6 },
   { id: 'MAR', name: 'Morocco', flag: '🇲🇦', group: 'C', rank: 7 },
-  { id: 'HAI', name: 'Haiti', flag: '🇭🇹', group: 'C', rank: 83 },
   { id: 'SCO', name: 'Scotland', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', group: 'C', rank: 42 },
+  { id: 'HAI', name: 'Haiti', flag: '🇭🇹', group: 'C', rank: 83 },
 
   // Group D
   { id: 'USA', name: 'United States', flag: '🇺🇸', group: 'D', rank: 17 },
-  { id: 'PAR', name: 'Paraguay', flag: '🇵🇾', group: 'D', rank: 41 },
-  { id: 'AUS', name: 'Australia', flag: '🇦🇺', group: 'D', rank: 27 },
   { id: 'TUR', name: 'Türkiye', flag: '🇹🇷', group: 'D', rank: 26 },
+  { id: 'AUS', name: 'Australia', flag: '🇦🇺', group: 'D', rank: 27 },
+  { id: 'PAR', name: 'Paraguay', flag: '🇵🇾', group: 'D', rank: 41 },
 
   // Group E
   { id: 'GER', name: 'Germany', flag: '🇩🇪', group: 'E', rank: 10 },
-  { id: 'CUW', name: 'Curaçao', flag: '🇨🇼', group: 'E', rank: 82 },
-  { id: 'CIV', name: "Côte d'Ivoire", flag: '🇨🇮', group: 'E', rank: 33 },
   { id: 'ECU', name: 'Ecuador', flag: '🇪🇨', group: 'E', rank: 28 },
+  { id: 'CIV', name: "Côte d'Ivoire", flag: '🇨🇮', group: 'E', rank: 33 },
+  { id: 'CUW', name: 'Curaçao', flag: '🇨🇼', group: 'E', rank: 82 },
 
   // Group F
   { id: 'NED', name: 'Netherlands', flag: '🇳🇱', group: 'F', rank: 8 },
@@ -39,39 +39,39 @@ export const TEAMS: Team[] = [
 
   // Group G
   { id: 'BEL', name: 'Belgium', flag: '🇧🇪', group: 'G', rank: 9 },
-  { id: 'EGY', name: 'Egypt', flag: '🇪🇬', group: 'G', rank: 29 },
   { id: 'IRN', name: 'IR Iran', flag: '🇮🇷', group: 'G', rank: 20 },
+  { id: 'EGY', name: 'Egypt', flag: '🇪🇬', group: 'G', rank: 29 },
   { id: 'NZL', name: 'New Zealand', flag: '🇳🇿', group: 'G', rank: 85 },
 
   // Group H
   { id: 'ESP', name: 'Spain', flag: '🇪🇸', group: 'H', rank: 3 },
-  { id: 'CPV', name: 'Cabo Verde', flag: '🇨🇻', group: 'H', rank: 67 },
-  { id: 'KSA', name: 'Saudi Arabia', flag: '🇸🇦', group: 'H', rank: 61 },
   { id: 'URU', name: 'Uruguay', flag: '🇺🇾', group: 'H', rank: 16 },
+  { id: 'KSA', name: 'Saudi Arabia', flag: '🇸🇦', group: 'H', rank: 61 },
+  { id: 'CPV', name: 'Cabo Verde', flag: '🇨🇻', group: 'H', rank: 67 },
 
   // Group I
   { id: 'FRA', name: 'France', flag: '🇫🇷', group: 'I', rank: 2 },
   { id: 'SEN', name: 'Senegal', flag: '🇸🇳', group: 'I', rank: 15 },
-  { id: 'IRQ', name: 'Iraq', flag: '🇮🇶', group: 'I', rank: 57 },
   { id: 'NOR', name: 'Norway', flag: '🇳🇴', group: 'I', rank: 31 },
+  { id: 'IRQ', name: 'Iraq', flag: '🇮🇶', group: 'I', rank: 57 },
 
   // Group J
   { id: 'ARG', name: 'Argentina', flag: '🇦🇷', group: 'J', rank: 1 },
-  { id: 'ALG', name: 'Algeria', flag: '🇩🇿', group: 'J', rank: 31 },
   { id: 'AUT', name: 'Austria', flag: '🇦🇹', group: 'J', rank: 21 },
+  { id: 'ALG', name: 'Algeria', flag: '🇩🇿', group: 'J', rank: 31 },
   { id: 'JOR', name: 'Jordan', flag: '🇯🇴', group: 'J', rank: 63 },
 
   // Group K
   { id: 'POR', name: 'Portugal', flag: '🇵🇹', group: 'K', rank: 5 },
+  { id: 'COL', name: 'Colombia', flag: '🇨🇴', group: 'K', rank: 13 },
   { id: 'COD', name: 'DR Congo', flag: '🇨🇩', group: 'K', rank: 46 },
   { id: 'UZB', name: 'Uzbekistan', flag: '🇺🇿', group: 'K', rank: 50 },
-  { id: 'COL', name: 'Colombia', flag: '🇨🇴', group: 'K', rank: 13 },
 
   // Group L
   { id: 'ENG', name: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', group: 'L', rank: 4 },
   { id: 'CRO', name: 'Croatia', flag: '🇭🇷', group: 'L', rank: 11 },
-  { id: 'GHA', name: 'Ghana', flag: '🇬🇭', group: 'L', rank: 73 },
   { id: 'PAN', name: 'Panama', flag: '🇵🇦', group: 'L', rank: 34 },
+  { id: 'GHA', name: 'Ghana', flag: '🇬🇭', group: 'L', rank: 73 },
 ];
 
 export const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
@@ -148,45 +148,45 @@ export const KNOCKOUT_METADATA: Omit<Match, 'homeTeamId' | 'awayTeamId' | 'winne
 
 const OFFICIAL_MATCH_NUMBERS: Record<string, number> = {
   // Round of 32
-  R32_1: 75,
-  R32_2: 78,
-  R32_3: 73,
-  R32_4: 76,
-  R32_5: 84,
-  R32_6: 83,
-  R32_7: 82,
-  R32_8: 81,
-  R32_9: 74,
-  R32_10: 77,
-  R32_11: 79,
-  R32_12: 80,
-  R32_13: 87,
-  R32_14: 86,
-  R32_15: 85,
-  R32_16: 88,
+  R32_1: 74,   // 1E vs 3rd A/B/C/D/F
+  R32_2: 77,   // 1I vs 3rd C/D/F/G/H
+  R32_3: 73,   // 2A vs 2B
+  R32_4: 75,   // 1F vs 2C
+  R32_5: 83,   // 2K vs 2L
+  R32_6: 84,   // 1H vs 2J
+  R32_7: 81,   // 1D vs 3rd B/E/F/I/J
+  R32_8: 82,   // 1G vs 3rd A/E/H/I/J
+  R32_9: 76,   // 1C vs 2F
+  R32_10: 78,  // 2E vs 2I
+  R32_11: 79,  // 1A vs 3rd C/E/F/H/I
+  R32_12: 80,  // 1L vs 3rd E/H/I/J/K
+  R32_13: 86,  // 1J vs 2H
+  R32_14: 88,  // 2D vs 2G
+  R32_15: 85,  // 1B vs 3rd E/F/G/I/J
+  R32_16: 87,  // 1K vs 3rd D/E/I/J/L
 
   // Round of 16
-  R16_1: 90,
-  R16_2: 89,
-  R16_3: 93,
-  R16_4: 94,
-  R16_5: 91,
-  R16_6: 92,
-  R16_7: 95,
-  R16_8: 96,
+  R16_1: 89,   // Winner Match 74 vs Winner Match 77
+  R16_2: 90,   // Winner Match 73 vs Winner Match 75
+  R16_3: 93,   // Winner Match 83 vs Winner Match 84
+  R16_4: 94,   // Winner Match 81 vs Winner Match 82
+  R16_5: 91,   // Winner Match 76 vs Winner Match 78
+  R16_6: 92,   // Winner Match 79 vs Winner Match 80
+  R16_7: 95,   // Winner Match 86 vs Winner Match 88
+  R16_8: 96,   // Winner Match 85 vs Winner Match 87
 
   // Quarter Finals
-  QF_1: 97,
-  QF_2: 98,
-  QF_3: 99,
-  QF_4: 100,
+  QF_1: 97,    // Winner Match 89 vs Winner Match 90
+  QF_2: 98,    // Winner Match 93 vs Winner Match 94
+  QF_3: 99,    // Winner Match 91 vs Winner Match 92
+  QF_4: 100,   // Winner Match 95 vs Winner Match 96
 
   // Semi Finals
-  SF_1: 101,
-  SF_2: 102,
+  SF_1: 101,   // Winner Match 97 vs Winner Match 98
+  SF_2: 102,   // Winner Match 99 vs Winner Match 100
 
   // Final
-  F: 104
+  F: 104       // Winner Match 101 vs Winner Match 102
 };
 
 export function getOfficialMatchNumber(matchId: string): string | number {
@@ -199,7 +199,7 @@ export function getOfficialMatchNumber(matchId: string): string | number {
 export function formatPlaceholder(placeholder: string | undefined): string {
   if (!placeholder) return 'TBD';
   
-  // Convert Winner R32_1 -> Winner Match 75, etc.
+  // Convert Winner R32_1 -> Winner Match 74, etc.
   const winnerMatch = placeholder.match(/^Winner (R32|R16|QF|SF)_(\d+)$/);
   if (winnerMatch) {
     const stage = winnerMatch[1];

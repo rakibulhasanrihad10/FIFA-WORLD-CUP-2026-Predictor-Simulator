@@ -22,13 +22,13 @@ export default function ShareModal({
   bracketElementId,
 }: ShareModalProps) {
   const { userName, userAvatar, setBrandingDetails } = useTournamentStore();
-  
+
   // Reusable modal states
   const [modalStep, setModalStep] = useState<'branding' | 'preview'>('branding');
   const [nameInput, setNameInput] = useState(userName || '');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(userAvatar || null);
 
-  const [shareTab, setShareTab] = useState<'summary' | 'bracket'>('summary');
+  const [shareTab, setShareTab] = useState<'summary' | 'bracket'>('bracket');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -145,7 +145,7 @@ export default function ShareModal({
       const response = await fetch(generatedImageUrl);
       const blob = await response.blob();
       const file = new File([blob], `world-cup-prediction.png`, { type: 'image/png' });
-      
+
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
@@ -156,8 +156,8 @@ export default function ShareModal({
         if (navigator.share) {
           await navigator.share({
             title: 'My FIFA World Cup 2026 Prediction',
-            text: champion 
-              ? `My predicted champion is ${champion.name}! Simulate yours too!` 
+            text: champion
+              ? `My predicted champion is ${champion.name}! Simulate yours too!`
               : `Check out my World Cup bracket simulation!`,
             url: window.location.href,
           });
@@ -177,8 +177,8 @@ export default function ShareModal({
     <>
       {/* Hidden Export Card Container */}
       <div className="absolute left-[-9999px] top-[-9999px] pointer-events-none select-none">
-        <div 
-          id="export-summary-card" 
+        <div
+          id="export-summary-card"
           className="w-[800px] h-[1200px] bg-[#060a08] text-white p-12 flex flex-col justify-between items-center relative overflow-hidden"
           style={{ fontFamily: 'sans-serif' }}
         >
@@ -207,9 +207,9 @@ export default function ShareModal({
             {/* Personalized branding badge */}
             <div className="flex items-center gap-3 bg-slate-950/60 px-4 py-2 rounded-2xl border border-slate-800/80 mt-4">
               {avatarPreview ? (
-                <img 
-                  src={avatarPreview} 
-                  alt="" 
+                <img
+                  src={avatarPreview}
+                  alt=""
                   className="w-8 h-8 rounded-full object-cover border border-emerald-500/50 flex-shrink-0"
                 />
               ) : (
@@ -238,7 +238,7 @@ export default function ShareModal({
                   Champion
                 </span>
               </div>
-              
+
               <div>
                 <h3 className="font-extrabold text-sm text-amber-400 uppercase tracking-widest flex items-center gap-1.5 justify-center">
                   <Award className="h-5 w-5" />
@@ -247,9 +247,9 @@ export default function ShareModal({
                 <div className="font-black text-4xl text-white mt-3 flex items-center justify-center gap-3">
                   {champion ? (
                     <>
-                      <img 
-                        src={getFlagUrl(champion.id) + "?cors"} 
-                        alt="" 
+                      <img
+                        src={getFlagUrl(champion.id) + "?cors"}
+                        alt=""
                         crossOrigin="anonymous"
                         className="w-11 h-7 object-cover rounded shadow-md border border-amber-400/20"
                       />
@@ -274,9 +274,9 @@ export default function ShareModal({
               <div className="font-extrabold text-xl text-white flex items-center justify-center gap-2">
                 {runnerUp ? (
                   <>
-                    <img 
-                      src={getFlagUrl(runnerUp.id) + "?cors"} 
-                      alt="" 
+                    <img
+                      src={getFlagUrl(runnerUp.id) + "?cors"}
+                      alt=""
                       crossOrigin="anonymous"
                       className="w-8 h-5 object-cover rounded shadow border border-slate-800"
                     />
@@ -295,7 +295,7 @@ export default function ShareModal({
               Simulated with FIFA World Cup 2026 Predictor
             </p>
             <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-              ⚽ 48 Teams • 104 Matches
+              Developed by Rakib • A die-hard Messi fan
             </p>
           </div>
         </div>
@@ -304,7 +304,7 @@ export default function ShareModal({
       {/* SHARE PREDICTION MODAL */}
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[2000] flex items-center justify-center p-4 animate-fade-in select-none">
         <div className="bg-slate-950 border border-slate-800/80 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto flex flex-col gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          
+
           {modalStep === 'branding' ? (
             <>
               {/* branding form header */}
@@ -313,7 +313,7 @@ export default function ShareModal({
                   <h3 className="text-lg font-black text-white uppercase tracking-wider">Personalize Prediction</h3>
                   <p className="text-[11px] text-slate-400 mt-0.5">Enter your details to brand your prediction cards.</p>
                 </div>
-                <button 
+                <button
                   onClick={onClose}
                   className="text-slate-400 hover:text-white hover:bg-slate-900 p-2 rounded-xl transition-all cursor-pointer font-bold w-8 h-8 flex items-center justify-center"
                 >
@@ -328,9 +328,9 @@ export default function ShareModal({
                   <label className="text-xs uppercase font-extrabold tracking-wider text-slate-400">Profile Picture</label>
                   <div className="flex items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/40">
                     {avatarPreview ? (
-                      <img 
-                        src={avatarPreview} 
-                        alt="Avatar Preview" 
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar Preview"
                         className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500 flex-shrink-0"
                       />
                     ) : (
@@ -341,16 +341,16 @@ export default function ShareModal({
                     <div className="flex flex-col gap-1.5">
                       <label className="px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-slate-605 text-white font-extrabold text-xs uppercase cursor-pointer hover:bg-slate-700 transition-colors w-fit">
                         Choose File
-                        <input 
-                          type="file" 
-                          accept="image/png, image/jpeg" 
-                          className="hidden" 
-                          onChange={handleFileChange} 
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          className="hidden"
+                          onChange={handleFileChange}
                         />
                       </label>
                       <span className="text-[9px] text-slate-500 font-bold">Supports PNG, JPG. Max size 2MB.</span>
                       {avatarPreview && (
-                        <button 
+                        <button
                           type="button"
                           onClick={() => setAvatarPreview(null)}
                           className="text-[9px] text-left text-rose-500 hover:underline font-bold uppercase w-fit"
@@ -392,7 +392,7 @@ export default function ShareModal({
                   <h3 className="text-lg font-black text-white uppercase tracking-wider">Share Prediction</h3>
                   <p className="text-[11px] text-slate-400 mt-0.5">Generate a picture of your predicted World Cup results.</p>
                 </div>
-                <button 
+                <button
                   onClick={onClose}
                   className="text-slate-400 hover:text-white hover:bg-slate-900 p-2 rounded-xl transition-all cursor-pointer font-bold w-8 h-8 flex items-center justify-center"
                 >
@@ -404,29 +404,27 @@ export default function ShareModal({
               <div className="flex bg-slate-900/60 p-1 rounded-xl border border-slate-800/40 gap-1">
                 <button
                   onClick={() => {
-                    setShareTab('summary');
-                    setGeneratedImageUrl(null);
-                  }}
-                  className={`flex-1 py-2 text-center text-xs font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-                    shareTab === 'summary'
-                      ? 'bg-emerald-500 text-slate-950 shadow'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Summary Card
-                </button>
-                <button
-                  onClick={() => {
                     setShareTab('bracket');
                     setGeneratedImageUrl(null);
                   }}
-                  className={`flex-1 py-2 text-center text-xs font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-                    shareTab === 'bracket'
-                      ? 'bg-emerald-500 text-slate-950 shadow'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
+                  className={`flex-1 py-2 text-center text-xs font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${shareTab === 'bracket'
+                    ? 'bg-emerald-500 text-slate-950 shadow'
+                    : 'text-slate-400 hover:text-white'
+                    }`}
                 >
                   Road to the Final
+                </button>
+                <button
+                  onClick={() => {
+                    setShareTab('summary');
+                    setGeneratedImageUrl(null);
+                  }}
+                  className={`flex-1 py-2 text-center text-xs font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${shareTab === 'summary'
+                    ? 'bg-emerald-500 text-slate-950 shadow'
+                    : 'text-slate-400 hover:text-white'
+                    }`}
+                >
+                  Summary Card
                 </button>
               </div>
 
@@ -440,7 +438,7 @@ export default function ShareModal({
                 ) : errorMessage ? (
                   <div className="text-center p-4">
                     <p className="text-xs text-rose-500 font-bold mb-2">⚠️ {errorMessage}</p>
-                    <button 
+                    <button
                       onClick={() => generateShareImage(shareTab)}
                       className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black uppercase tracking-wider underline cursor-pointer"
                     >
@@ -449,9 +447,9 @@ export default function ShareModal({
                   </div>
                 ) : generatedImageUrl ? (
                   <div className="w-full h-full flex items-center justify-center relative">
-                    <img 
-                      src={generatedImageUrl} 
-                      alt="Prediction Preview" 
+                    <img
+                      src={generatedImageUrl}
+                      alt="Prediction Preview"
                       className="max-h-full max-w-full rounded-lg object-contain shadow-md border border-slate-900"
                     />
                   </div>

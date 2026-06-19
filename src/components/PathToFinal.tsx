@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { TEAMS, KNOCKOUT_METADATA, getFlagUrl, getOfficialMatchNumber } from '../data/initialData';
 import { Team, TeamStanding } from '../types/tournament';
@@ -37,6 +38,11 @@ export default function PathToFinal() {
   const [isGeneratingShare, setIsGeneratingShare] = useState<boolean>(false);
   const [generatedShareImageUrl, setGeneratedShareImageUrl] = useState<string | null>(null);
   const [shareErrorMessage, setShareErrorMessage] = useState<string | null>(null);
+
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -542,8 +548,12 @@ export default function PathToFinal() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div className="flex items-center gap-3">
-          <div className="bg-[#FFD700]/10 p-3 rounded-2xl border border-[#FFD700]/30 shadow-[0_0_15px_rgba(255,215,0,0.1)]">
-            <Trophy className="h-6 w-6 text-[#FFD700] animate-pulse" />
+          <div className="bg-[#FFD700]/10 p-3 rounded-2xl border border-[#FFD700]/30 shadow-[0_0_15px_rgba(255,215,0,0.1)] flex items-center justify-center">
+            <img
+              src="/world_cup_trophy.png"
+              alt="World Cup Trophy"
+              className="h-6 w-6 object-contain animate-pulse select-none filter drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]"
+            />
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider font-sports-header flex items-center gap-2">
@@ -558,60 +568,67 @@ export default function PathToFinal() {
           </div>
         </div>
 
-        <div className="flex bg-slate-950/60 p-1 rounded-xl border border-slate-800 self-start sm:self-center">
-          <button
-            onClick={() => setViewMode('timeline')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              viewMode === 'timeline'
-                ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-sm border border-[#FFD700]/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Timeline View
-          </button>
-          <button
-            onClick={() => setViewMode('bracket')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              viewMode === 'bracket'
-                ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-sm border border-[#FFD700]/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Tournament Bracket View
-          </button>
-        </div>
-        
-        <div className="flex items-center gap-2 self-start sm:self-center">
-          {selectedTeamId && (
-            isPathComplete ? (
-              <button
-                onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/30 text-xs font-bold text-white transition-all shadow-md hover:shadow-emerald-500/10 cursor-pointer animate-fade-in"
-              >
-                <Share2 className="h-3.5 w-3.5" />
-                Share Road
-              </button>
-            ) : (
-              <div
-                title="Complete all match predictions to unlock sharing"
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/40 text-slate-500 text-xs font-bold uppercase select-none cursor-not-allowed animate-fade-in"
-              >
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                Share Road
-              </div>
-            )
-          )}
-          {Object.keys(pathPredictions).length > 0 && (
+        {/* Controls (Switcher & Actions) */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto self-start lg:self-center lg:justify-end">
+          {/* Switcher */}
+          <div className="h-9 sm:h-10 flex items-center gap-2 bg-slate-950/60 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
             <button
-              onClick={resetPredictions}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-slate-400 hover:text-white hover:border-slate-700 transition-colors cursor-pointer"
+              onClick={() => setViewMode('timeline')}
+              className={`flex-1 h-full flex items-center justify-center px-3 sm:px-5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border text-center whitespace-nowrap ${
+                viewMode === 'timeline'
+                  ? 'bg-slate-800 text-slate-200 border-slate-700/60 shadow-sm'
+                  : 'text-slate-400 hover:text-white border-transparent'
+              }`}
             >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Reset Path predictions
+              Timeline View
             </button>
+            <button
+              onClick={() => setViewMode('bracket')}
+              className={`flex-1 h-full flex items-center justify-center px-3 sm:px-5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border text-center whitespace-nowrap ${
+                viewMode === 'bracket'
+                  ? 'bg-slate-800 text-slate-200 border-slate-700/60 shadow-sm'
+                  : 'text-slate-400 hover:text-white border-transparent'
+              }`}
+            >
+              Tournament Bracket View
+            </button>
+          </div>
+          
+          {/* Actions */}
+          {(selectedTeamId || Object.keys(pathPredictions).length > 0) && (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {selectedTeamId && (
+                isPathComplete ? (
+                  <button
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="flex-1 h-9 sm:h-10 flex items-center justify-center gap-1 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/30 text-[10px] sm:text-xs font-bold text-white transition-all shadow-md hover:shadow-emerald-500/10 cursor-pointer animate-fade-in text-center whitespace-nowrap"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    Share / Download
+                  </button>
+                ) : (
+                  <div
+                    title="Complete all match predictions to unlock sharing"
+                    className="flex-1 h-9 sm:h-10 flex items-center justify-center gap-1 px-3.5 rounded-lg bg-slate-800/60 border border-slate-700/40 text-slate-500 text-[10px] sm:text-xs font-bold uppercase select-none cursor-not-allowed animate-fade-in text-center whitespace-nowrap"
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Share / Download
+                  </div>
+                )
+              )}
+              {Object.keys(pathPredictions).length > 0 && (
+                <button
+                  onClick={resetPredictions}
+                  className="flex-1 h-9 sm:h-10 flex items-center justify-center gap-1 px-3.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] sm:text-xs font-bold text-slate-400 hover:text-white hover:border-slate-700 transition-colors cursor-pointer text-center whitespace-nowrap"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset predictions
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -635,7 +652,7 @@ export default function PathToFinal() {
                 setIsDropdownOpen(true);
               }}
               onFocus={() => setIsDropdownOpen(true)}
-              placeholder="Search team (e.g. Argentina, Mexico...)"
+              placeholder="Search team (e.g. Argentina, Brazil)"
               className="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-800 bg-slate-950/60 text-sm font-semibold text-white focus:outline-none focus:border-[#FFD700]/50 focus:shadow-[0_0_12px_rgba(255,215,0,0.08)] transition-all"
             />
             {selectedTeam && (
@@ -697,7 +714,7 @@ export default function PathToFinal() {
                 <button
                   key={scen}
                   onClick={() => handleScenarioChange(scen)}
-                  className={`py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+                  className={`py-2 px-1 rounded-xl text-[9px] min-[380px]:text-[10px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 ${
                     isActive
                       ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-md border border-[#FFD700]/30'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40 border border-transparent'
@@ -762,7 +779,7 @@ export default function PathToFinal() {
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-8 w-full">
                       {/* Stage label and Match tag */}
                       <div className="sm:w-44 flex-shrink-0 flex flex-col pt-1.5 text-left select-none">
-                        <span className="text-xs sm:text-base md:text-lg font-black uppercase tracking-wider text-[#FFD700] font-sports-header">
+                        <span className="text-sm sm:text-lg md:text-xl font-black uppercase tracking-wider text-[#FFD700] font-sports-header">
                           {stage.stageLabel}
                         </span>
                         <span className="text-xs font-bold text-slate-500 mt-0.5">
@@ -831,7 +848,7 @@ export default function PathToFinal() {
                               ? 'animate-border-glow border-sky-500/35 shadow-[0_0_15px_rgba(56,189,248,0.15)]'
                               : 'border-slate-800'
                           }`}>
-                            <div className="flex items-center justify-between text-[10px] font-black tracking-wider text-slate-400 uppercase">
+                            <div className="flex items-center justify-center gap-1.5 text-[9px] min-[380px]:text-[10px] sm:text-xs font-black tracking-wider text-slate-400 uppercase whitespace-nowrap text-center">
                               <span>Predict Match {getOfficialMatchNumber(stage.opponentMatchId!)} Winner</span>
                               <span className="text-[#FFD700] font-bold normal-case">
                                 (Sets stage opponent)
@@ -927,7 +944,7 @@ export default function PathToFinal() {
                             : 'border-slate-800/80 hover:border-emerald-500/20 shadow-[0_15px_30px_rgba(0,0,0,0.4)]'
                         }`}>
                           {/* Match Stage Title */}
-                          <div className={`text-[10px] font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2.5 font-sports-header ${stageHeaderColor}`}>
+                          <div className={`text-xs sm:text-sm font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2.5 font-sports-header ${stageHeaderColor}`}>
                             {stage.stageLabel}
                           </div>
                           
@@ -1058,6 +1075,30 @@ export default function PathToFinal() {
               </div>
             </div>
           )}
+
+          {/* Bottom Quick Share / Download Bar */}
+          <div className="flex items-center justify-center gap-3 pt-6 border-t border-slate-900/80 mt-4 flex-shrink-0">
+            {isPathComplete ? (
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center justify-center gap-1.5 px-4.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/35 text-xs font-bold text-white uppercase tracking-wider transition-all shadow-md hover:shadow-emerald-500/20 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Share / Download
+              </button>
+            ) : (
+              <div
+                title="Complete all match predictions to unlock sharing"
+                className="flex items-center justify-center gap-1.5 px-4.5 py-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-500 text-xs font-bold uppercase tracking-wider select-none cursor-not-allowed"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Share / Download
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-950/10 select-none animate-fade-in">
@@ -1320,7 +1361,7 @@ export default function PathToFinal() {
                 Simulated with FIFA World Cup 2026 Predictor
               </p>
               <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-                ⚽ 48 Teams • Interactive Path Simulator
+                Developed by Rakib • A die-hard Messi fan
               </p>
             </div>
           </div>
@@ -1328,9 +1369,11 @@ export default function PathToFinal() {
       )}
 
       {/* SHARE PATH MODAL */}
-      {isShareModalOpen && (
+      {isShareModalOpen && isMounted && createPortal(
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[2000] flex items-center justify-center p-4 animate-fade-in select-none">
-          <div className="bg-slate-950 border border-slate-800/80 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto flex flex-col gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className={`bg-slate-950 border border-slate-800/80 rounded-3xl p-6 md:p-8 w-full max-h-[95vh] overflow-y-auto flex flex-col gap-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${
+            viewMode === 'bracket' ? 'max-w-2xl' : 'max-w-sm sm:max-w-md'
+          }`}>
             
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-900 pb-4">
@@ -1347,7 +1390,7 @@ export default function PathToFinal() {
             </div>
 
             {/* Preview Box */}
-            <div className={`relative w-full rounded-2xl border border-slate-900 bg-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden group shadow-inner ${
+            <div className={`relative w-full rounded-2xl border border-slate-900 bg-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden group shadow-inner max-h-[42vh] ${
               viewMode === 'bracket' ? 'aspect-[16/9]' : 'aspect-[4/5]'
             }`}>
               {isGeneratingShare ? (
@@ -1418,7 +1461,8 @@ export default function PathToFinal() {
               * Note: Clipboard copy and native sharing depend on device support. If they fail, please right-click or long-press the preview image to save it.
             </p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

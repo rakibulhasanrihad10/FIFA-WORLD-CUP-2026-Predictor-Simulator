@@ -75,15 +75,59 @@ export default function Home() {
       <main className="flex-1 w-full flex flex-col items-center">
         {renderStepComponent()}
       </main>
-      
+
       {/* Footer copyright */}
-      <footer className="w-full text-center py-6 border-t border-slate-950/80 bg-slate-950/30 flex-shrink-0 select-none flex flex-col gap-1.5">
+      <footer className="w-full text-center py-6 border-t border-slate-950/80 bg-slate-950/30 flex-shrink-0 select-none flex flex-col items-center gap-2">
         <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest">
-          ⚽ FIFA World Cup 2026 Predictor Simulator
+          FIFA World Cup 2026 Predictor Simulator
         </span>
-        <span className="text-[9px] text-slate-600 font-semibold tracking-wider">
-          Developed by <span className="text-slate-500 font-bold hover:text-emerald-400 transition-colors duration-200 cursor-default">Rakibul Hasan</span>
-        </span>
+
+        {/* Developed with love football . Contact */}
+        <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-semibold tracking-wide">
+          <span>Developed with</span>
+          <svg
+            className="w-3.5 h-3.5 text-red-500 fill-current animate-pulse"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg "
+          >
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+          <span>⚽ .</span>
+          <a
+            href="mailto:rakibulhasanrihad@gmail.com"
+            className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"
+          >
+            Contact
+          </a>
+        </div>
+
+        {/* Social profile links */}
+        <div className="flex items-center gap-4 text-xs font-bold mt-0.5">
+          <a
+            href="https://www.facebook.com/contexterror"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-500 hover:text-emerald-400 transition-colors duration-200"
+          >
+            Facebook
+          </a>
+          <a
+            href="https://x.com/iam_rakib_"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-500 hover:text-emerald-400 transition-colors duration-200"
+          >
+            X
+          </a>
+          <a
+            href="https://instagram.com/iam_rakib_"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-500 hover:text-emerald-400 transition-colors duration-200"
+          >
+            Instagram
+          </a>
+        </div>
       </footer>
     </div>
   );

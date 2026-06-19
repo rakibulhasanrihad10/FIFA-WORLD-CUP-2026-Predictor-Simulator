@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
 import { Team } from '../types/tournament';
 import MatchCard from './MatchCard';
@@ -17,16 +17,22 @@ export default function GroupStage() {
   // Local state for the 4 ranking slots
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null, null]);
 
+  // Keep track of activeGroup in local ref to detect when it changes
+  const prevGroupRef = useRef<string>(activeGroup);
+
   // Sync slots when activeGroup, matches, or standings change
   useEffect(() => {
     const groupMatches = matches.filter((m) => m.groupId === activeGroup);
     const completed = groupMatches.filter((m) => m.winnerId !== undefined).length;
     const isCompleted = completed === groupMatches.length;
+    
+    const hasGroupChanged = prevGroupRef.current !== activeGroup;
+    prevGroupRef.current = activeGroup;
 
     if (isCompleted) {
       const standingOrder = (standings[activeGroup] || []).map((s) => s.teamId);
       setSlots(standingOrder);
-    } else {
+    } else if (hasGroupChanged) {
       setSlots([null, null, null, null]);
     }
   }, [activeGroup, matches, standings]);

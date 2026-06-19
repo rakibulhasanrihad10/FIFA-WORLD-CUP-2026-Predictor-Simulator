@@ -16,6 +16,24 @@ export default function ChampionScreen() {
 
   // Sharing state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [isButtonReady, setIsButtonReady] = useState(false);
+
+  // Trigger reveal after a short delay
+  useEffect(() => {
+    const revealTimer = setTimeout(() => {
+      setIsRevealed(true);
+    }, 2000); // 2 seconds reveal delay for results
+
+    const buttonTimer = setTimeout(() => {
+      setIsButtonReady(true);
+    }, 3000); // 3 seconds (2s reveal + 1s podium transition) for active button highlight & pulse
+
+    return () => {
+      clearTimeout(revealTimer);
+      clearTimeout(buttonTimer);
+    };
+  }, []);
 
   // Trigger rich confetti animation when Champion screen is loaded
   useEffect(() => {
@@ -85,15 +103,14 @@ export default function ChampionScreen() {
           Prediction Finished
         </div>
         <h2 className="text-3xl md:text-5xl font-black text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-200 to-amber-400">
-          Your 2026 World Cup Champion
+          Your 2026 World Cup Champion is {champion?.name || 'TBD'}
         </h2>
-        <p className="text-xs md:text-sm text-slate-400">
-          You have successfully simulated the tournament.
-        </p>
       </div>
 
       {/* PODIUM DISPLAY */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 max-w-4xl mx-auto px-4 w-full">
+      <div className={`flex flex-col sm:flex-row items-center justify-center gap-6 max-w-4xl mx-auto px-4 w-full transition-all duration-1000 ease-out transform ${
+        isRevealed ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'
+      }`}>
         {/* Runner Up Card */}
         <div className="w-full sm:w-64 order-2 sm:order-1 glass-panel rounded-2xl p-5 border-slate-700/35 bg-gradient-to-b from-slate-900/10 to-slate-950/40 flex flex-col items-center text-center gap-3">
           <div className="relative">
@@ -124,7 +141,11 @@ export default function ChampionScreen() {
         <div className="w-full sm:w-80 order-1 sm:order-2 glass-panel rounded-3xl p-6 border-[#fbbf24]/30 bg-gradient-to-b from-[#fbbf24]/5 to-slate-950/50 flex flex-col items-center text-center gap-4 shadow-[0_8px_32px_rgba(251,191,36,0.12)]">
           <div className="relative">
             <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-amber-500/10 to-amber-500/30 border-2 border-[#fbbf24] flex items-center justify-center shadow-[0_0_24px_rgba(251,191,36,0.25)] select-none">
-              <Trophy className="h-12 w-12 text-[#fbbf24] drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
+              <img 
+                src="/world_cup_trophy.png" 
+                alt="FIFA World Cup Trophy" 
+                className="h-16 w-auto object-contain drop-shadow-[0_0_12px_rgba(251,191,36,0.45)]"
+              />
             </div>
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#fbbf24] text-slate-950 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#fbbf24] animate-bounce shadow-md">
               Champion
@@ -160,8 +181,13 @@ export default function ChampionScreen() {
           Simulate Again
         </button>
         <button
+          disabled={!isButtonReady}
           onClick={() => setIsShareModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shadow-sm cursor-pointer"
+          className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 shadow-sm ${
+            isButtonReady
+              ? 'bg-emerald-400 text-slate-950 hover:bg-emerald-300 cursor-pointer border border-emerald-300/40 animate-share-glow-pulse'
+              : 'bg-slate-800/40 text-slate-500 cursor-not-allowed opacity-40 border border-slate-700/30'
+          }`}
         >
           <Share2 className="h-3.5 w-3.5" />
           Share Prediction

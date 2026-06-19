@@ -85,7 +85,7 @@ export default function MatchCard({ match, onSelectWinner, lightTheme = false, c
           />
           <span className={`font-semibold truncate ${compact ? 'text-xs' : 'text-sm'}`}>{team.name}</span>
           {!compact && isLoser && (
-            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20 select-none flex-shrink-0 animate-fade-in">
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[8.5px] font-black tracking-widest uppercase bg-red-950/40 text-red-500 border-2 border-red-500 select-none flex-shrink-0 animate-fade-in">
               Eliminated
             </span>
           )}
