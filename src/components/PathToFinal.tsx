@@ -598,7 +598,7 @@ export default function PathToFinal() {
 
   return (
     <>
-      <div className="w-full glass-panel rounded-3xl p-6 sm:p-8 border-[#FFD700]/10 bg-slate-950/40 shadow-xl flex flex-col gap-8 select-none relative overflow-hidden">
+      <div className="w-full glass-panel rounded-3xl p-4 sm:p-8 border-[#FFD700]/10 bg-slate-950/40 shadow-xl flex flex-col gap-8 select-none relative overflow-hidden">
         {/* Background radial gold glow */}
         <div className="absolute -right-40 -top-40 w-96 h-96 bg-gradient-to-br from-[#FFD700]/5 to-transparent blur-[100px] rounded-full pointer-events-none -z-10" />
 
@@ -763,7 +763,7 @@ export default function PathToFinal() {
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Group Finishing Scenario
             </label>
-            <div className="grid grid-cols-3 gap-2 bg-slate-950/60 border border-slate-900 p-1.5 rounded-2xl">
+            <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-slate-950/60 border border-slate-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl">
               {(['1st', '2nd', '3rd'] as const).map((scen) => {
                 const labelMap = { '1st': 'Winner (1st)', '2nd': 'Runner-up (2nd)', '3rd': 'Third (3rd)' };
                 const isActive = scenario === scen;
@@ -771,12 +771,12 @@ export default function PathToFinal() {
                   <button
                     key={scen}
                     onClick={() => handleScenarioChange(scen)}
-                    className={`w-full py-2 px-1 rounded-xl font-black uppercase tracking-normal sm:tracking-wider whitespace-nowrap leading-tight ${
+                    className={`w-full py-2 px-0.5 min-[380px]:px-1 rounded-lg sm:rounded-xl font-black uppercase tracking-normal sm:tracking-wider whitespace-nowrap leading-tight ${
                       scen === '2nd'
-                        ? 'text-[8px] min-[380px]:text-[10px] sm:text-xs'
+                        ? 'text-[8px] min-[340px]:text-[9px] min-[380px]:text-[10px] sm:text-xs'
                         : 'text-[9px] min-[380px]:text-[10px] sm:text-xs'
                     } ${isActive
-                      ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-md border border-[#FFD700]/30'
+                      ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-md border border-[#FFD700]/50'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40 border border-transparent'
                       }`}
                   >
