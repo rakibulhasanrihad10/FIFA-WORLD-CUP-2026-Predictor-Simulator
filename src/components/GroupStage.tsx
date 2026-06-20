@@ -297,9 +297,9 @@ export default function GroupStage() {
           <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-3">
             <div className="text-xs font-extrabold select-none flex items-center gap-1.5">
               {isAllGroupsCompleted ? (
-                <span className="text-amber-500 flex items-center gap-1.5 animate-fade-in">
-                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                  All predictions complete! Click "Seed Knockout Bracket" to advance to the knockout stage.
+                <span className="text-[#10B981] flex items-center gap-1.5 animate-fade-in font-extrabold text-[10px] sm:text-xs">
+                  <span className="h-2 w-2 rounded-full bg-[#10B981] animate-pulse" />
+                  Group stage prediction complete!
                 </span>
               ) : isActiveGroupCompleted ? (
                 <span className="text-[#10B981] flex items-center gap-1.5 animate-fade-in">
@@ -322,9 +322,9 @@ export default function GroupStage() {
             {isAllGroupsCompleted ? (
               <button
                 onClick={advanceToKnockouts}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)] cursor-pointer uppercase tracking-wider"
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-black bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)] cursor-pointer uppercase tracking-wider whitespace-nowrap"
               >
-                <Play className="h-3 w-3 fill-slate-950 stroke-none" />
+                <Play className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-slate-950 stroke-none" />
                 Proceed to 3rd Place Selection
               </button>
             ) : (
