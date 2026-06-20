@@ -771,7 +771,7 @@ export default function PathToFinal() {
                   <button
                     key={scen}
                     onClick={() => handleScenarioChange(scen)}
-                    className={`py-2 px-1 rounded-xl font-black uppercase tracking-normal sm:tracking-wider whitespace-nowrap leading-tight ${
+                    className={`w-full py-2 px-1 rounded-xl font-black uppercase tracking-normal sm:tracking-wider whitespace-nowrap leading-tight ${
                       scen === '2nd'
                         ? 'text-[8px] min-[380px]:text-[10px] sm:text-xs'
                         : 'text-[9px] min-[380px]:text-[10px] sm:text-xs'
