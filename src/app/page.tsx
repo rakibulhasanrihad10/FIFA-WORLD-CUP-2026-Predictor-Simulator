@@ -42,6 +42,35 @@ export default function Home() {
     }
   }, [step, mounted]);
 
+  // Synchronize history state with step transitions
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Initialize initial state for Home if not set
+    if (window.history.state?.step === undefined) {
+      window.history.replaceState({ step: 'home' }, '', '');
+    }
+
+    // Only push if the current history state is different from the active step
+    if (window.history.state?.step !== step) {
+      window.history.pushState({ step }, '', '');
+    }
+  }, [step, mounted]);
+
+  // Listen to browser Back/Forward navigation clicks
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.step) {
+        useTournamentStore.setState({ step: event.state.step });
+      } else {
+        useTournamentStore.setState({ step: 'home' });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   if (!mounted) {
     return (
       <div className="flex flex-col flex-1 items-center justify-center min-h-screen bg-[#060a08] text-slate-400 select-none">
@@ -82,23 +111,17 @@ export default function Home() {
           FIFA World Cup 2026 Predictor Simulator
         </span>
 
-        {/* Developed with love football . Contact */}
-        <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-semibold tracking-wide">
-          <span>Developed with</span>
-          <svg
-            className="w-3.5 h-3.5 text-red-500 fill-current animate-pulse"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg "
-          >
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-          </svg>
-          <span>⚽ .</span>
+        {/* Made by Rakib • ⚽❤️ */}
+        <div className="flex items-center justify-center gap-1 text-[11px] text-slate-400 font-semibold tracking-wide">
+          <span>Made by</span>
           <a
             href="mailto:rakibulhasanrihad@gmail.com"
-            className="hover:text-emerald-400 transition-colors duration-200 cursor-pointer"
+            className="text-slate-200 font-bold hover:text-emerald-400 transition-colors duration-200 cursor-pointer"
           >
-            Contact
+            Rakib
           </a>
+          <span className="text-slate-500 ml-0.5">•</span>
+          <span>⚽❤️</span>
         </div>
 
         {/* Social profile links */}
@@ -107,7 +130,7 @@ export default function Home() {
             href="https://www.facebook.com/contexterror"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-500 hover:text-emerald-400 transition-colors duration-200"
+            className="text-slate-500 hover:text-emerald-400 hover:-translate-y-0.5 transform transition-all duration-200"
           >
             Facebook
           </a>
@@ -115,7 +138,7 @@ export default function Home() {
             href="https://x.com/iam_rakib_"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-500 hover:text-emerald-400 transition-colors duration-200"
+            className="text-slate-500 hover:text-emerald-400 hover:-translate-y-0.5 transform transition-all duration-200"
           >
             X
           </a>
@@ -123,7 +146,7 @@ export default function Home() {
             href="https://instagram.com/iam_rakib_"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-500 hover:text-emerald-400 transition-colors duration-200"
+            className="text-slate-500 hover:text-emerald-400 hover:-translate-y-0.5 transform transition-all duration-200"
           >
             Instagram
           </a>

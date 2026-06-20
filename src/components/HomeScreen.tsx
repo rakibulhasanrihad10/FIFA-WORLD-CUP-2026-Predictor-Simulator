@@ -77,21 +77,17 @@ export default function HomeScreen() {
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            {/* Title with left & right World Cup trophies */}
-            <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6">
-              <img
-                src="/world_cup_trophy.png"
-                alt="FIFA World Cup Trophy Left"
-                className="h-9 sm:h-14 md:h-16 object-contain drop-shadow-[0_4px_8px_rgba(255,215,0,0.2)]"
-              />
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white leading-none font-sports-title uppercase">
-                FIFA WORLD CUP <span className="text-[#FFD700] font-sports-title drop-shadow-[0_0_16px_rgba(255,215,0,0.35)]">2026</span>
+            {/* Title with inline World Cup trophy after 'CUP' */}
+            <div className="flex items-center justify-center">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white leading-none font-sports-title uppercase flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+                <span>FIFA WORLD CUP</span>
+                <img
+                  src="/world_cup_trophy.png"
+                  alt="FIFA World Cup Trophy"
+                  className="h-8 sm:h-12 md:h-14 lg:h-16 object-contain drop-shadow-[0_4px_8px_rgba(255,215,0,0.2)] animate-pulse"
+                />
+                <span className="text-[#FFD700] font-sports-title drop-shadow-[0_0_16px_rgba(255,215,0,0.35)]">2026</span>
               </h1>
-              <img
-                src="/world_cup_trophy.png"
-                alt="FIFA World Cup Trophy Right"
-                className="h-9 sm:h-14 md:h-16 object-contain drop-shadow-[0_4px_8px_rgba(255,215,0,0.2)]"
-              />
             </div>
 
             <h2 className="text-lg sm:text-2xl md:text-3xl text-slate-100 font-bold tracking-wide uppercase font-sports-header">

@@ -8,12 +8,20 @@ import { Award, ShieldAlert, ArrowRight, Check, Sparkles } from 'lucide-react';
 export default function Qualification() {
   const { qualifiedTeams, setStep, standings, toggleThirdPlaceQualifier, autoSelectThirdPlacesByRank } = useTournamentStore();
 
-  // Scroll to the Best 3rd Places interactive section when the screen loads
+  // Scroll to the Best 3rd Places interactive section when the screen loads, offsetting the sticky header
   useEffect(() => {
     const timer = setTimeout(() => {
       const element = document.getElementById('best-3rd-places-section');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.offsetHeight : 80;
+        const elementRect = element.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.scrollY;
+        
+        window.scrollTo({
+          top: absoluteElementTop - headerHeight - 16,
+          behavior: 'smooth',
+        });
       }
     }, 150);
     return () => clearTimeout(timer);

@@ -325,7 +325,7 @@ export default function GroupStage() {
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)] cursor-pointer uppercase tracking-wider"
               >
                 <Play className="h-3 w-3 fill-slate-950 stroke-none" />
-                Proceed to Qualifiers
+                Proceed to 3rd Place Selection
               </button>
             ) : (
               isActiveGroupCompleted && activeGroup !== 'L' && (
