@@ -602,7 +602,7 @@ export const useTournamentStore = create<TournamentState>()(
           { id: 'R32_11', home: findWinner('A'), away: thirdPlaceAssignments['R32_11'] || '' }, // Match 79
           { id: 'R32_12', home: findWinner('L'), away: thirdPlaceAssignments['R32_12'] || '' }, // Match 80
           { id: 'R32_13', home: findWinner('J'), away: findRunnerUp('H') }, // Match 86
-          { id: 'R32_14', home: findWinner('D'), away: findRunnerUp('G') }, // Match 88
+          { id: 'R32_14', home: findRunnerUp('D'), away: findRunnerUp('G') }, // Match 88
           { id: 'R32_15', home: findWinner('B'), away: thirdPlaceAssignments['R32_15'] || '' }, // Match 85
           { id: 'R32_16', home: findWinner('K'), away: thirdPlaceAssignments['R32_16'] || '' }, // Match 87
         ];
