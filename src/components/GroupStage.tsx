@@ -6,11 +6,23 @@ import { Team } from '../types/tournament';
 import MatchCard from './MatchCard';
 import StandingsTable from './StandingsTable';
 import { GROUPS, TEAMS, getFlagUrl } from '../data/initialData';
-import { CheckCircle2, ChevronRight, Play, Sparkles } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Play, Sparkles, AlertCircle } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptic';
 
 export default function GroupStage() {
-  const { matches, standings, selectWinner, quickRankGroup, clearGroupPredictions, advanceToKnockouts, autoPredictAllGroupsByRank, reset } = useTournamentStore();
+  const {
+    matches,
+    standings,
+    selectWinner,
+    quickRankGroup,
+    clearGroupPredictions,
+    advanceToKnockouts,
+    autoPredictAllGroupsByRank,
+    reset,
+    autoPredictAllGroupsByApi,
+    isFetchingApiStandings,
+    apiStandingsError
+  } = useTournamentStore();
   const [activeGroup, setActiveGroup] = useState<string>('A');
   const [predictionMode, setPredictionMode] = useState<'match' | 'rank'>('rank');
 
@@ -25,7 +37,7 @@ export default function GroupStage() {
     const groupMatches = matches.filter((m) => m.groupId === activeGroup);
     const completed = groupMatches.filter((m) => m.winnerId !== undefined).length;
     const isCompleted = completed === groupMatches.length;
-    
+
     const hasGroupChanged = prevGroupRef.current !== activeGroup;
     prevGroupRef.current = activeGroup;
 
@@ -39,7 +51,7 @@ export default function GroupStage() {
 
   // Filter matches for the active group
   const groupMatches = matches.filter((m) => m.groupId === activeGroup);
-  
+
   // Overall group matches completion
   const allGroupMatches = matches.filter((m) => m.type === 'group');
   const completedCount = allGroupMatches.filter((m) => m.winnerId !== undefined).length;
@@ -138,36 +150,56 @@ export default function GroupStage() {
                 — Choose winner for each match individually, or rank teams in order.
               </p>
             </div>
-            
-            <button
-              onClick={autoPredictAllGroupsByRank}
-              className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00ffff]/10 border border-[#00ffff]/30 text-[#00ffff] hover:bg-[#00ffff]/20 hover:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 shadow-md hover:scale-[1.02] cursor-pointer flex-shrink-0"
-              title="Auto-predict all 12 groups by FIFA rank"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Auto-Predict by FIFA Rank
-            </button>
+
+            <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+              <button
+                onClick={autoPredictAllGroupsByApi}
+                disabled={isFetchingApiStandings}
+                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/20 hover:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 shadow-md hover:scale-[1.02] cursor-pointer ${isFetchingApiStandings ? 'opacity-70 cursor-wait' : ''}`}
+                title="Predict all 12 groups based on current group table point"
+              >
+                {isFetchingApiStandings ? (
+                  <div className="h-3.5 w-3.5 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
+                Based on current group table point
+              </button>
+
+              <button
+                onClick={autoPredictAllGroupsByRank}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00ffff]/10 border border-[#00ffff]/30 text-[#00ffff] hover:bg-[#00ffff]/20 hover:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 shadow-md hover:scale-[1.02] cursor-pointer"
+                title="Auto-predict all 12 groups by FIFA rank"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Auto-Predict by FIFA Rank
+              </button>
+            </div>
           </div>
+          {apiStandingsError && (
+            <div className="text-red-400 text-xs flex items-center gap-1 bg-red-950/20 border border-red-900/30 p-2.5 rounded-xl animate-fade-in">
+              <AlertCircle className="h-3.5 w-3.5" />
+              <span>Failed to fetch live standings: {apiStandingsError}</span>
+            </div>
+          )}
 
           {/* Mode Toggle Bar */}
           <div className="flex items-center justify-between bg-slate-950/40 p-1 rounded-xl border border-slate-800 select-none">
             <button
               onClick={() => setPredictionMode('rank')}
-              className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                predictionMode === 'rank'
+              className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${predictionMode === 'rank'
                   ? 'bg-slate-800 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               Direct Group Ranking
             </button>
             <button
               onClick={() => setPredictionMode('match')}
-              className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                predictionMode === 'match'
+              className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-xs font-bold transition-all ${predictionMode === 'match'
                   ? 'bg-slate-800 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               Match-by-Match
             </button>
@@ -191,12 +223,12 @@ export default function GroupStage() {
                 <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">
                   Target Slots (Click placed team to remove)
                 </div>
-                
+
                 <div className="grid grid-cols-4 gap-2.5">
                   {slots.map((teamId, index) => {
                     const team = teamId ? TEAMS.find((t) => t.id === teamId) : undefined;
                     const isNext = index === slots.indexOf(null);
-                    
+
                     const labels = ['1ST', '2ND', '3RD', '4TH'];
 
                     if (team) {
@@ -210,9 +242,9 @@ export default function GroupStage() {
                             {labels[index]}
                           </span>
                           <div className="flex items-center gap-1.5 justify-center py-1">
-                            <img 
-                              src={getFlagUrl(team.id)} 
-                              alt={`${team.name} Flag`} 
+                            <img
+                              src={getFlagUrl(team.id)}
+                              alt={`${team.name} Flag`}
                               className="w-5.5 h-3.5 object-cover rounded-sm shadow-sm border border-black/20 select-none flex-shrink-0"
                             />
                             <span className="text-sm font-extrabold text-white tracking-wide">{team.id}</span>
@@ -227,11 +259,10 @@ export default function GroupStage() {
                     return (
                       <div
                         key={`slot-${index}`}
-                        className={`flex flex-col items-center justify-between p-2.5 rounded-xl border border-dashed text-center min-h-[96px] w-full transition-all ${
-                          isNext
+                        className={`flex flex-col items-center justify-between p-2.5 rounded-xl border border-dashed text-center min-h-[96px] w-full transition-all ${isNext
                             ? 'border-[#10B981] bg-emerald-950/20 shadow-[0_0_12px_rgba(16,185,129,0.15)] border-solid'
                             : 'border-slate-800 bg-slate-950/45 text-slate-600'
-                        }`}
+                          }`}
                       >
                         <span className="text-[10px] font-bold text-slate-500 self-start">{labels[index]}</span>
                         {isNext ? (
@@ -265,18 +296,17 @@ export default function GroupStage() {
                         key={team.id}
                         disabled={isPlaced}
                         onClick={() => handlePlace(team.id)}
-                        className={`flex flex-col items-center justify-between p-2.5 rounded-xl border transition-all text-center min-h-[96px] ${
-                          isPlaced
+                        className={`flex flex-col items-center justify-between p-2.5 rounded-xl border transition-all text-center min-h-[96px] ${isPlaced
                             ? 'bg-slate-950/40 border-transparent text-slate-600 opacity-15 cursor-not-allowed'
                             : 'bg-slate-900/80 border-[#1F2937] text-white hover:border-[#10B981] hover:bg-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.15)] cursor-pointer transform hover:scale-[1.02]'
-                        }`}
+                          }`}
                       >
                         <span className="text-[9px] text-slate-400 font-bold self-start">
                           #{team.rank}
                         </span>
-                        <img 
-                          src={getFlagUrl(team.id)} 
-                          alt={`${team.name} Flag`} 
+                        <img
+                          src={getFlagUrl(team.id)}
+                          alt={`${team.name} Flag`}
                           className="w-10 h-6.5 object-cover rounded-sm shadow-sm border border-black/20 select-none my-1"
                         />
                         <div className="flex flex-col items-center">
@@ -375,11 +405,10 @@ export default function GroupStage() {
               <button
                 key={`overview-${group}`}
                 onClick={() => setActiveGroup(group)}
-                className={`flex flex-col p-3 rounded-xl border transition-all text-left duration-200 transform hover:scale-[1.02] cursor-pointer ${
-                  isActive
+                className={`flex flex-col p-3 rounded-xl border transition-all text-left duration-200 transform hover:scale-[1.02] cursor-pointer ${isActive
                     ? 'bg-[#111827] border-[#10B981] border-2 text-white shadow-[0_0_12px_rgba(16,185,129,0.25)]'
                     : 'bg-[#111827] border-[#1F2937] text-white hover:bg-[#161f30] hover:border-[#2b3a4e]'
-                }`}
+                  }`}
               >
                 {/* Header row: Letter and Status */}
                 <div className="flex items-center justify-between w-full mb-3 select-none">

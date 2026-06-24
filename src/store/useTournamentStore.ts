@@ -16,6 +16,9 @@ interface TournamentState {
   runnerUpId?: string;
   userName?: string;
   userAvatar?: string;
+  apiStandings: Record<string, TeamStanding[]> | null;
+  isFetchingApiStandings: boolean;
+  apiStandingsError: string | null;
   setStep: (step: TournamentStep) => void;
   selectWinner: (matchId: string, winnerId: string) => void;
   quickRankGroup: (groupId: string, teamIdsInOrder: string[]) => void;
@@ -26,6 +29,8 @@ interface TournamentState {
   autoPredictAllGroupsByRank: () => void;
   autoSelectThirdPlacesByRank: () => void;
   reset: () => void;
+  fetchApiStandings: () => Promise<void>;
+  autoPredictAllGroupsByApi: () => Promise<void>;
 }
 
 // Initial state helpers
@@ -220,6 +225,9 @@ export const useTournamentStore = create<TournamentState>()(
       runnerUpId: undefined,
       userName: undefined,
       userAvatar: undefined,
+      apiStandings: null,
+      isFetchingApiStandings: false,
+      apiStandingsError: null,
 
       setStep: (step) => set({ step }),
 
@@ -555,6 +563,111 @@ export const useTournamentStore = create<TournamentState>()(
         });
       },
 
+      autoPredictAllGroupsByApi: async () => {
+        set({ isFetchingApiStandings: true, apiStandingsError: null });
+        try {
+          // 1. Fetch teams metadata to build API ID -> FIFA Code map
+          const teamsResponse = await fetch('https://worldcup26.ir/get/teams');
+          if (!teamsResponse.ok) {
+            throw new Error(`Failed to fetch teams: ${teamsResponse.statusText}`);
+          }
+          const teamsData = await teamsResponse.json();
+          const apiTeams: any[] = teamsData.teams || [];
+          
+          const apiIdToFifaCode: Record<string, string> = {};
+          apiTeams.forEach((team) => {
+            if (team.id && team.fifa_code) {
+              apiIdToFifaCode[team.id] = team.fifa_code;
+            }
+          });
+
+          // 2. Fetch current group standings
+          const groupsResponse = await fetch('https://worldcup26.ir/get/groups');
+          if (!groupsResponse.ok) {
+            throw new Error(`Failed to fetch group standings: ${groupsResponse.statusText}`);
+          }
+          const groupsData = await groupsResponse.json();
+          const apiGroups: any[] = groupsData.groups || [];
+
+          const apiStandingsRecord: Record<string, TeamStanding[]> = {};
+          
+          apiGroups.forEach((group) => {
+            const groupLetter = group.name; // e.g. "A"
+            if (!groupLetter) return;
+
+            const standingsList: TeamStanding[] = (group.teams || []).map((team: any) => {
+              const fifaCode = apiIdToFifaCode[team.team_id] || team.team_id;
+              return {
+                teamId: fifaCode,
+                played: parseInt(team.mp, 10) || 0,
+                won: parseInt(team.w, 10) || 0,
+                lost: parseInt(team.l, 10) || 0,
+                points: parseInt(team.pts, 10) || 0,
+              };
+            });
+
+            apiStandingsRecord[groupLetter] = standingsList;
+          });
+
+          // Process matches and set winners according to API standings
+          const { matches } = get();
+          const updatedMatches = [...matches];
+
+          updatedMatches.forEach((match, idx) => {
+            if (match.type === 'group' && match.homeTeamId && match.awayTeamId && match.groupId) {
+              const groupLetter = match.groupId;
+              const groupStandings = apiStandingsRecord[groupLetter] || [];
+              const homeIndex = groupStandings.findIndex(s => s.teamId === match.homeTeamId);
+              const awayIndex = groupStandings.findIndex(s => s.teamId === match.awayTeamId);
+
+              if (homeIndex !== -1 && awayIndex !== -1) {
+                // Lower index in array means higher rank/standing
+                const winnerId = homeIndex < awayIndex ? match.homeTeamId : match.awayTeamId;
+                updatedMatches[idx] = {
+                  ...match,
+                  winnerId,
+                };
+              } else {
+                updatedMatches[idx] = {
+                  ...match,
+                  winnerId: match.homeTeamId,
+                };
+              }
+            }
+          });
+
+          // Reset all knockout matches to their default structure
+          updatedMatches.forEach((m, idx) => {
+            if (m.type === 'knockout') {
+              updatedMatches[idx] = {
+                ...m,
+                homeTeamId: undefined,
+                awayTeamId: undefined,
+                winnerId: undefined,
+              };
+            }
+          });
+
+          set({
+            matches: updatedMatches,
+            standings: apiStandingsRecord,
+            apiStandings: apiStandingsRecord,
+            isFetchingApiStandings: false,
+            apiStandingsError: null,
+            qualifiedTeams: { winners: [], runnersUp: [], thirdPlaces: [] },
+            championId: undefined,
+            runnerUpId: undefined,
+          });
+        } catch (error: any) {
+          console.error('Error fetching API standings:', error);
+          set({
+            isFetchingApiStandings: false,
+            apiStandingsError: error.message || 'Failed to load standings from server.',
+          });
+          throw error;
+        }
+      },
+
       autoSelectThirdPlacesByRank: () => {
         const { standings, qualifiedTeams, matches } = get();
         
@@ -652,7 +765,70 @@ export const useTournamentStore = create<TournamentState>()(
           runnerUpId: undefined,
           userName: undefined,
           userAvatar: undefined,
+          apiStandings: null,
+          isFetchingApiStandings: false,
+          apiStandingsError: null,
         });
+      },
+
+      fetchApiStandings: async () => {
+        set({ isFetchingApiStandings: true, apiStandingsError: null });
+        try {
+          // 1. Fetch teams metadata to build API ID -> FIFA Code map
+          const teamsResponse = await fetch('https://worldcup26.ir/get/teams');
+          if (!teamsResponse.ok) {
+            throw new Error(`Failed to fetch teams: ${teamsResponse.statusText}`);
+          }
+          const teamsData = await teamsResponse.json();
+          const apiTeams: any[] = teamsData.teams || [];
+          
+          const apiIdToFifaCode: Record<string, string> = {};
+          apiTeams.forEach((team) => {
+            if (team.id && team.fifa_code) {
+              apiIdToFifaCode[team.id] = team.fifa_code;
+            }
+          });
+
+          // 2. Fetch current group standings
+          const groupsResponse = await fetch('https://worldcup26.ir/get/groups');
+          if (!groupsResponse.ok) {
+            throw new Error(`Failed to fetch group standings: ${groupsResponse.statusText}`);
+          }
+          const groupsData = await groupsResponse.json();
+          const apiGroups: any[] = groupsData.groups || [];
+
+          const apiStandingsRecord: Record<string, TeamStanding[]> = {};
+          
+          apiGroups.forEach((group) => {
+            const groupLetter = group.name; // e.g. "A"
+            if (!groupLetter) return;
+
+            const standingsList: TeamStanding[] = (group.teams || []).map((team: any) => {
+              const fifaCode = apiIdToFifaCode[team.team_id] || team.team_id;
+              return {
+                teamId: fifaCode,
+                played: parseInt(team.mp, 10) || 0,
+                won: parseInt(team.w, 10) || 0,
+                lost: parseInt(team.l, 10) || 0,
+                points: parseInt(team.pts, 10) || 0,
+              };
+            });
+
+            apiStandingsRecord[groupLetter] = standingsList;
+          });
+
+          set({
+            apiStandings: apiStandingsRecord,
+            isFetchingApiStandings: false,
+            apiStandingsError: null,
+          });
+        } catch (error: any) {
+          console.error('Error fetching API standings:', error);
+          set({
+            isFetchingApiStandings: false,
+            apiStandingsError: error.message || 'Failed to load standings from server.',
+          });
+        }
       },
     }),
     {

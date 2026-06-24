@@ -117,7 +117,17 @@ export default function Header() {
             </div>
           </div>
 
-          {step !== 'home' && (
+          {step === 'home' ? (
+            <button
+              onClick={() => {
+                alert("World Cup History page is coming soon!");
+              }}
+              className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#fbbf24]/10 hover:bg-[#fbbf24]/20 text-[#fbbf24] border border-[#fbbf24]/35 hover:border-[#fbbf24]/60 transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(251,191,36,0.05)] active:scale-[0.97]"
+            >
+              <Trophy className="h-3.5 w-3.5 text-[#fbbf24] animate-pulse" />
+              <span>WC History</span>
+            </button>
+          ) : (
             <button
               onClick={reset}
               className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 hover:text-red-300 transition-all"
@@ -200,6 +210,20 @@ export default function Header() {
             >
               <RotateCcw className="h-4 w-4" />
               Reset
+            </button>
+          </div>
+        )}
+
+        {step === 'home' && (
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => {
+                alert("World Cup History page is coming soon!");
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-[#fbbf24]/10 hover:bg-[#fbbf24]/20 text-[#fbbf24] border border-[#fbbf24]/30 hover:border-[#fbbf24]/65 transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(251,191,36,0.05)] hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Trophy className="h-4 w-4 text-[#fbbf24] animate-pulse" />
+              <span>World Cup History</span>
             </button>
           </div>
         )}

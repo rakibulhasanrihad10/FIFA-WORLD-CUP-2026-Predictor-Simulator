@@ -24,7 +24,17 @@ interface TimelineStage {
 }
 
 export default function PathToFinal() {
-  const { standings, qualifiedTeams, userName, userAvatar, setBrandingDetails } = useTournamentStore();
+  const {
+    standings,
+    qualifiedTeams,
+    userName,
+    userAvatar,
+    setBrandingDetails,
+    apiStandings,
+    isFetchingApiStandings,
+    apiStandingsError,
+    fetchApiStandings
+  } = useTournamentStore();
 
   // State
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
@@ -33,6 +43,10 @@ export default function PathToFinal() {
   const [searchText, setSearchText] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'timeline' | 'bracket'>('timeline');
+  const [groupRankingMode, setGroupRankingMode] = useState<'expert' | 'fifa' | 'custom'>('fifa');
+
+  // Selected Team Object
+  const selectedTeam = TEAMS.find((t) => t.id === selectedTeamId);
 
   // Share modal states
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
@@ -45,10 +59,51 @@ export default function PathToFinal() {
     setIsMounted(true);
   }, []);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // Auto-fetch API standings if they are the default and haven't been loaded yet
+  useEffect(() => {
+    if (groupRankingMode === 'fifa' && !apiStandings && !isFetchingApiStandings) {
+      fetchApiStandings().catch((err) => console.error('Failed auto-fetching standings:', err));
+    }
+  }, [groupRankingMode, apiStandings, isFetchingApiStandings, fetchApiStandings]);
 
-  // Selected Team Object
-  const selectedTeam = TEAMS.find((t) => t.id === selectedTeamId);
+  // Helper: Check if selected team is eliminated under current mode
+  const isTeamEliminatedInSelectedMode = (): boolean => {
+    if (!selectedTeamId || !selectedTeam) return false;
+    if (groupRankingMode === 'fifa' && apiStandings && apiStandings[selectedTeam.group]) {
+      const idx = apiStandings[selectedTeam.group].findIndex((s) => s.teamId === selectedTeamId);
+      return idx === 3;
+    }
+    if (groupRankingMode === 'expert') {
+      const groupTeams = TEAMS.filter((t) => t.group === selectedTeam.group);
+      const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
+      const idx = sorted.findIndex((t) => t.id === selectedTeamId);
+      return idx === 3;
+    }
+    return false;
+  };
+
+  // Automatically determine the finishing scenario when team or ranking mode changes
+  useEffect(() => {
+    if (!selectedTeamId || !selectedTeam) return;
+
+    if (groupRankingMode === 'fifa') {
+      if (apiStandings && apiStandings[selectedTeam.group]) {
+        const idx = apiStandings[selectedTeam.group].findIndex((s) => s.teamId === selectedTeamId);
+        if (idx === 0) setScenario('1st');
+        else if (idx === 1) setScenario('2nd');
+        else if (idx >= 2) setScenario('3rd');
+      }
+    } else if (groupRankingMode === 'expert') {
+      const groupTeams = TEAMS.filter((t) => t.group === selectedTeam.group);
+      const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
+      const idx = sorted.findIndex((t) => t.id === selectedTeamId);
+      if (idx === 0) setScenario('1st');
+      else if (idx === 1) setScenario('2nd');
+      else if (idx >= 2) setScenario('3rd');
+    }
+  }, [selectedTeamId, selectedTeam, groupRankingMode, apiStandings]);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const generateShareImage = async () => {
     setIsGeneratingShare(true);
@@ -326,33 +381,54 @@ export default function PathToFinal() {
     const pos = parseInt(match[1], 10) - 1; // 0 for 1st, 1 for 2nd
     const group = match[2];
 
-    const groupStandings = standings[group];
-    const active = isGroupStageActive();
-
     let resolvedId = '';
 
-    if (active && groupStandings && groupStandings[pos]) {
-      resolvedId = groupStandings[pos].teamId;
-    } else {
-      // FIFA Rank fallback
+    if (groupRankingMode === 'fifa' && apiStandings && apiStandings[group] && apiStandings[group][pos]) {
+      resolvedId = apiStandings[group][pos].teamId;
+    } else if (groupRankingMode === 'expert') {
       const groupTeams = TEAMS.filter((t) => t.group === group);
       const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
       resolvedId = sorted[pos]?.id || '';
+    } else {
+      const groupStandings = standings[group];
+      const active = isGroupStageActive();
+
+      if (active && groupStandings && groupStandings[pos]) {
+        resolvedId = groupStandings[pos].teamId;
+      } else {
+        // FIFA Rank fallback
+        const groupTeams = TEAMS.filter((t) => t.group === group);
+        const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
+        resolvedId = sorted[pos]?.id || '';
+      }
     }
 
     // Edge Case: Prevent selected team from appearing in duplicate group slots
     if (resolvedId === selectedTeamId && selectedTeam) {
       const assumedSlot = scenario === '1st' ? `1${selectedTeam.group}` : scenario === '2nd' ? `2${selectedTeam.group}` : '';
       if (slot !== assumedSlot) {
-        if (active && groupStandings) {
-          const filtered = groupStandings.filter((s) => s.teamId !== selectedTeamId);
-          const actualPosOfSelected = groupStandings.findIndex((s) => s.teamId === selectedTeamId);
+        if (groupRankingMode === 'fifa' && apiStandings && apiStandings[group]) {
+          const filtered = apiStandings[group].filter((s) => s.teamId !== selectedTeamId);
+          const actualPosOfSelected = apiStandings[group].findIndex((s) => s.teamId === selectedTeamId);
           const adjustedPos = actualPosOfSelected < pos ? pos - 1 : pos;
           resolvedId = filtered[adjustedPos]?.teamId || '';
-        } else {
+        } else if (groupRankingMode === 'expert') {
           const groupTeams = TEAMS.filter((t) => t.group === group && t.id !== selectedTeamId);
           const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
           resolvedId = sorted[pos]?.id || '';
+        } else {
+          const groupStandings = standings[group];
+          const active = isGroupStageActive();
+          if (active && groupStandings) {
+            const filtered = groupStandings.filter((s) => s.teamId !== selectedTeamId);
+            const actualPosOfSelected = groupStandings.findIndex((s) => s.teamId === selectedTeamId);
+            const adjustedPos = actualPosOfSelected < pos ? pos - 1 : pos;
+            resolvedId = filtered[adjustedPos]?.teamId || '';
+          } else {
+            const groupTeams = TEAMS.filter((t) => t.group === group && t.id !== selectedTeamId);
+            const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
+            resolvedId = sorted[pos]?.id || '';
+          }
         }
       }
     }
@@ -399,13 +475,21 @@ export default function PathToFinal() {
 
     const candidates = groups
       .map((g) => {
-        const groupStandings = standings[g];
-        if (active && groupStandings && groupStandings[2]) {
-          return groupStandings[2].teamId;
-        } else {
+        if (groupRankingMode === 'fifa' && apiStandings && apiStandings[g] && apiStandings[g][2]) {
+          return apiStandings[g][2].teamId;
+        } else if (groupRankingMode === 'expert') {
           const groupTeams = TEAMS.filter((t) => t.group === g);
           const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
           return sorted[2]?.id || '';
+        } else {
+          const groupStandings = standings[g];
+          if (active && groupStandings && groupStandings[2]) {
+            return groupStandings[2].teamId;
+          } else {
+            const groupTeams = TEAMS.filter((t) => t.group === g);
+            const sorted = [...groupTeams].sort((a, b) => a.rank - b.rank);
+            return sorted[2]?.id || '';
+          }
         }
       })
       .filter(Boolean)
@@ -760,24 +844,34 @@ export default function PathToFinal() {
 
           {/* Scenario Tabs */}
           <div className="lg:col-span-7 flex flex-col gap-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Group Finishing Scenario
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Group Finishing Scenario
+              </label>
+              {groupRankingMode !== 'custom' && (
+                <span className="text-[10px] text-[#FFD700] font-bold uppercase tracking-wider bg-[#FFD700]/10 border border-[#FFD700]/30 px-2.5 py-0.5 rounded-full animate-fade-in">
+                  Locked by Standings Source
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-slate-950/60 border border-slate-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl">
               {(['1st', '2nd', '3rd'] as const).map((scen) => {
                 const labelMap = { '1st': 'Winner (1st)', '2nd': 'Runner-up (2nd)', '3rd': 'Third (3rd)' };
                 const isActive = scenario === scen;
+                const isLocked = groupRankingMode !== 'custom';
                 return (
                   <button
                     key={scen}
+                    disabled={isLocked}
                     onClick={() => handleScenarioChange(scen)}
-                    className={`w-full py-2 px-0.5 min-[380px]:px-1 rounded-lg sm:rounded-xl font-black uppercase tracking-normal sm:tracking-wider whitespace-nowrap leading-tight ${
-                      scen === '2nd'
-                        ? 'text-[8px] min-[340px]:text-[9px] min-[380px]:text-[10px] sm:text-xs'
-                        : 'text-[9px] min-[380px]:text-[10px] sm:text-xs'
-                    } ${isActive
-                      ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-md border border-[#FFD700]/50'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40 border border-transparent'
+                    className={`w-full py-2 px-0.5 min-[380px]:px-1 rounded-lg sm:rounded-xl font-black uppercase tracking-normal sm:tracking-wider whitespace-nowrap leading-tight ${scen === '2nd'
+                      ? 'text-[8px] min-[340px]:text-[9px] min-[380px]:text-[10px] sm:text-xs'
+                      : 'text-[9px] min-[380px]:text-[10px] sm:text-xs'
+                      } ${isActive
+                        ? 'bg-gradient-to-r from-[#78350f] to-[#FFD700] text-white shadow-md border border-[#FFD700]/50'
+                        : isLocked
+                          ? 'text-slate-500 opacity-30 cursor-not-allowed border border-transparent'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-900/40 border border-transparent'
                       }`}
                   >
                     {labelMap[scen]}
@@ -788,12 +882,82 @@ export default function PathToFinal() {
           </div>
         </div>
 
+        {/* Group Standings Source Buttons */}
+        <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-4">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Group Standings Data Source
+          </label>
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              onClick={() => setGroupRankingMode('expert')}
+              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${groupRankingMode === 'expert'
+                ? 'border-cyan-500/80 text-cyan-400 bg-cyan-950/15 shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black'
+                : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
+                }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+              Based on expert group rank
+            </button>
+            <button
+              onClick={async () => {
+                setGroupRankingMode('fifa');
+                if (!apiStandings) {
+                  await fetchApiStandings();
+                }
+              }}
+              disabled={isFetchingApiStandings}
+              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${
+                groupRankingMode === 'fifa'
+                  ? 'border-cyan-500/80 text-cyan-400 bg-cyan-950/15 shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black'
+                  : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
+              } ${isFetchingApiStandings ? 'opacity-70 cursor-wait' : ''}`}
+            >
+              {isFetchingApiStandings ? (
+                <div className="h-3.5 w-3.5 border-2 border-cyan-450 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+              )}
+              Based on current group table point
+            </button>
+            <button
+              onClick={() => setGroupRankingMode('custom')}
+              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${groupRankingMode === 'custom'
+                ? 'border-cyan-500/80 text-cyan-400 bg-cyan-950/15 shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black'
+                : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
+                }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+              Based on your own group table rank
+            </button>
+          </div>
+          {apiStandingsError && (
+            <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+              <AlertCircle className="h-3.5 w-3.5" />
+              {apiStandingsError}
+            </p>
+          )}
+          {groupRankingMode === 'fifa' && apiStandings && (
+            <p className="text-emerald-450 text-xs mt-1 flex items-center gap-1 animate-fade-in">
+              <Check className="h-3.5 w-3.5" />
+              Live group standings successfully loaded from worldcup26.ir!
+            </p>
+          )}
+        </div>
+
         {/* Disclaimers, Notifications & Timeline Section */}
         {selectedTeamId && selectedTeam ? (
           <div className="flex flex-col gap-8 animate-fade-in">
             {/* Disclaimers & Standing Notifications */}
             <div className="flex flex-col gap-2">
-              {scenario === '3rd' && (
+              {isTeamEliminatedInSelectedMode() && (
+                <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] p-3.5 rounded-xl animate-fade-in">
+                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <p className="leading-relaxed">
+                    <strong>Eliminated:</strong> According to the selected standings source, {selectedTeam.name} finished 4th in Group {selectedTeam.group} and is eliminated. The path below shows a hypothetical 3rd-place qualification route.
+                  </p>
+                </div>
+              )}
+              {scenario === '3rd' && !isTeamEliminatedInSelectedMode() && (
                 <div className="flex items-start gap-2 bg-blue-500/5 border border-blue-500/20 text-blue-400 text-[11px] p-3.5 rounded-xl">
                   <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <p className="leading-relaxed">
