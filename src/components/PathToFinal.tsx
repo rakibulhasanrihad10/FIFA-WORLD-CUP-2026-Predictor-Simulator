@@ -44,6 +44,7 @@ export default function PathToFinal() {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'timeline' | 'bracket'>('timeline');
   const [groupRankingMode, setGroupRankingMode] = useState<'expert' | 'fifa' | 'custom'>('fifa');
+  const [opponentMode, setOpponentMode] = useState<'possible' | 'predict'>('possible');
 
   // Selected Team Object
   const selectedTeam = TEAMS.find((t) => t.id === selectedTeamId);
@@ -54,10 +55,35 @@ export default function PathToFinal() {
   const [generatedShareImageUrl, setGeneratedShareImageUrl] = useState<string | null>(null);
   const [shareErrorMessage, setShareErrorMessage] = useState<string | null>(null);
 
+
+
   const [isMounted, setIsMounted] = useState<boolean>(false);
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const getOpponentGroupsAndPlaceholder = (): { opponentGroup: string; placeholder: string } => {
+    if (!selectedTeam) return { opponentGroup: '', placeholder: '' };
+    const startingMatch = getStartingMatch(selectedTeam.group, scenario);
+    const matchMetadata = KNOCKOUT_METADATA.find((m) => m.id === startingMatch.matchId);
+    if (!matchMetadata) return { opponentGroup: '', placeholder: '' };
+    const placeholder = startingMatch.isHome ? matchMetadata.placeholderAway : matchMetadata.placeholderHome;
+    if (!placeholder) return { opponentGroup: '', placeholder: '' };
+
+    // Example placeholders: "2F", "3rd A/B/C/D/F", etc.
+    let opponentGroup = '';
+    if (placeholder.startsWith('3rd ')) {
+      opponentGroup = placeholder.replace('3rd ', ''); // Keep "A/B/C/D/F"
+    } else {
+      const match = placeholder.match(/^([12])([A-L])$/);
+      if (match) {
+        opponentGroup = match[2];
+      }
+    }
+    return { opponentGroup, placeholder };
+  };
+
+
 
   // Auto-fetch API standings if they are the default and haven't been loaded yet
   useEffect(() => {
@@ -328,6 +354,7 @@ export default function PathToFinal() {
 
   const siblingMatchIds = getSiblingMatchIds();
   const isPathComplete = siblingMatchIds.length > 0 && siblingMatchIds.every((id) => !!pathPredictions[id]);
+  const canShare = opponentMode === 'possible' || isPathComplete;
   const activePredictMatchId = siblingMatchIds.find((id) => !pathPredictions[id]);
 
   // Play team winner audio when the path is fully predicted
@@ -516,8 +543,8 @@ export default function PathToFinal() {
       return pathPredictions[matchId];
     }
 
-    // If it is a user-editable sibling match of our current path, and they haven't predicted it, return empty.
-    if (siblingMatchIds.includes(matchId)) {
+    // In 'predict' mode, if it is a user-editable sibling match of our current path, and they haven't predicted it, return empty.
+    if (opponentMode === 'predict' && siblingMatchIds.includes(matchId)) {
       return '';
     }
 
@@ -739,8 +766,8 @@ export default function PathToFinal() {
             {/* Actions */}
             {(selectedTeamId || Object.keys(pathPredictions).length > 0) && (
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                {selectedTeamId && (
-                  isPathComplete ? (
+                {selectedTeamId && !(isTeamEliminatedInSelectedMode() && groupRankingMode === 'fifa') && (
+                  canShare ? (
                     <button
                       onClick={() => setIsShareModalOpen(true)}
                       className="flex-1 h-9 sm:h-10 flex items-center justify-center gap-1 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/30 text-[10px] sm:text-xs font-bold text-white transition-all shadow-md hover:shadow-emerald-500/10 cursor-pointer animate-fade-in text-center whitespace-nowrap"
@@ -882,6 +909,35 @@ export default function PathToFinal() {
           </div>
         </div>
 
+        {/* Opponent Display Mode */}
+        <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-4">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Opponent Display Option
+          </label>
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              onClick={() => setOpponentMode('possible')}
+              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${opponentMode === 'possible'
+                ? 'border-[#FFD700]/80 text-[#FFD700] bg-[#FFD700]/10 shadow-[0_0_15px_rgba(255,215,0,0.15)] font-black'
+                : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
+                }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+              See Possible Opponent (New Setup)
+            </button>
+            <button
+              onClick={() => setOpponentMode('predict')}
+              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${opponentMode === 'predict'
+                ? 'border-[#FFD700]/80 text-[#FFD700] bg-[#FFD700]/10 shadow-[0_0_15px_rgba(255,215,0,0.15)] font-black'
+                : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
+                }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+              Predict Match to See Opponent (Current Setup)
+            </button>
+          </div>
+        </div>
+
         {/* Group Standings Source Buttons */}
         <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-4">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -898,27 +954,7 @@ export default function PathToFinal() {
               <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
               Based on expert group rank
             </button>
-            <button
-              onClick={async () => {
-                setGroupRankingMode('fifa');
-                if (!apiStandings) {
-                  await fetchApiStandings();
-                }
-              }}
-              disabled={isFetchingApiStandings}
-              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${
-                groupRankingMode === 'fifa'
-                  ? 'border-cyan-500/80 text-cyan-400 bg-cyan-950/15 shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black'
-                  : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
-              } ${isFetchingApiStandings ? 'opacity-70 cursor-wait' : ''}`}
-            >
-              {isFetchingApiStandings ? (
-                <div className="h-3.5 w-3.5 border-2 border-cyan-450 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-              ) : (
-                <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
-              )}
-              Based on current group table point
-            </button>
+
             <button
               onClick={() => setGroupRankingMode('custom')}
               className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${groupRankingMode === 'custom'
@@ -928,6 +964,27 @@ export default function PathToFinal() {
             >
               <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
               Based on your own group table rank
+            </button>
+
+            <button
+              onClick={async () => {
+                setGroupRankingMode('fifa');
+                if (!apiStandings) {
+                  await fetchApiStandings();
+                }
+              }}
+              disabled={isFetchingApiStandings}
+              className={`py-2 px-5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer border flex items-center gap-2 ${groupRankingMode === 'fifa'
+                ? 'border-cyan-500/80 text-cyan-400 bg-cyan-950/15 shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black'
+                : 'border-slate-800 text-slate-500 hover:text-slate-400 hover:border-slate-700 bg-transparent'
+                } ${isFetchingApiStandings ? 'opacity-70 cursor-wait' : ''}`}
+            >
+              {isFetchingApiStandings ? (
+                <div className="h-3.5 w-3.5 border-2 border-cyan-450 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
+              )}
+              Based on current group table point
             </button>
           </div>
           {apiStandingsError && (
@@ -944,9 +1001,36 @@ export default function PathToFinal() {
           )}
         </div>
 
-        {/* Disclaimers, Notifications & Timeline Section */}
         {selectedTeamId && selectedTeam ? (
-          <div className="flex flex-col gap-8 animate-fade-in">
+          isTeamEliminatedInSelectedMode() && groupRankingMode === 'fifa' ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-red-500/20 rounded-3xl bg-red-950/5 select-none animate-fade-in gap-4 max-w-xl mx-auto">
+              <div className="relative flex items-center justify-center">
+                <img
+                  src={getFlagUrl(selectedTeam.id)}
+                  alt={selectedTeam.name}
+                  className="w-16 h-10 object-cover rounded-lg shadow-md border-2 border-slate-950"
+                />
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-red-600 border border-slate-950 flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xs font-bold font-sports-header">✕</span>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-rose-500 uppercase tracking-wider font-sports-header">
+                  ELIMINATED
+                </h3>
+                <p className="text-sm text-slate-300 font-bold mt-1.5 uppercase tracking-wide">
+                  {selectedTeam.name} • Group {selectedTeam.group}
+                </p>
+                <p className="text-xs text-slate-400 max-w-sm mt-3 leading-relaxed">
+                  According to the current group table standings, {selectedTeam.name} finished 4th in Group {selectedTeam.group} and has been eliminated from the tournament.
+                </p>
+                <p className="text-xs text-[#FFD700] mt-3 max-w-sm leading-relaxed font-bold">
+                  {selectedTeam.name} Group Stage-এ ৪র্থ হওয়ায় টুর্নামেন্ট থেকে বিদায় নিয়েছে। তাই Path to the final দেখার সুযোগ নেই।
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-8 animate-fade-in">
             {/* Disclaimers & Standing Notifications */}
             <div className="flex flex-col gap-2">
               {isTeamEliminatedInSelectedMode() && (
@@ -966,6 +1050,7 @@ export default function PathToFinal() {
                 </div>
               )}
             </div>
+
 
             {viewMode === 'timeline' ? (
               // Timeline Section
@@ -1028,34 +1113,57 @@ export default function PathToFinal() {
                               </div>
 
                               {/* Right Contender: Opponent */}
-                              <div className="flex items-center gap-3 w-full md:w-5/12 border border-slate-800 bg-slate-950/40 p-2.5 rounded-xl">
-                                {opponent ? (
-                                  <>
+                              {opponentMode === 'possible' && stage.isInteractive && contenderA && contenderB ? (
+                                <div className="flex flex-col gap-1.5 w-full md:w-5/12 border border-slate-800 bg-slate-950/40 p-2.5 rounded-xl text-center items-center justify-center min-h-[64px]">
+                                  <span className="text-[10px] font-black text-[#FFD700] uppercase tracking-wider mb-1">
+                                    Winner of
+                                  </span>
+                                  <div className="flex items-center justify-center gap-2 flex-wrap">
                                     <img
-                                      src={getFlagUrl(opponent.id)}
-                                      alt={opponent.name}
-                                      className="w-8 h-5 object-cover rounded shadow-sm border border-slate-950 flex-shrink-0"
+                                      src={getFlagUrl(contenderA.id)}
+                                      alt={contenderA.name}
+                                      className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-950 flex-shrink-0"
                                     />
-                                    <div className="flex flex-col min-w-0">
-                                      <span className="text-sm font-extrabold text-white truncate">
-                                        {opponent.name}
-                                      </span>
-                                    </div>
-                                    <span className="text-[10px] text-slate-500 font-bold ml-auto font-sports-header">
-                                      #{opponent.rank}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <div className="flex items-center justify-center py-2 w-full text-slate-500 text-xs font-bold uppercase tracking-wider">
-                                    TBD Opponent
+                                    <span className="text-xs font-extrabold text-white truncate max-w-[100px]">{contenderA.name}</span>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">vs</span>
+                                    <img
+                                      src={getFlagUrl(contenderB.id)}
+                                      alt={contenderB.name}
+                                      className="w-5.5 h-3.5 object-cover rounded shadow-sm border border-slate-950 flex-shrink-0"
+                                    />
+                                    <span className="text-xs font-extrabold text-white truncate max-w-[100px]">{contenderB.name}</span>
                                   </div>
-                                )}
-                              </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-3 w-full md:w-5/12 border border-slate-800 bg-slate-950/40 p-2.5 rounded-xl">
+                                  {opponent ? (
+                                    <>
+                                      <img
+                                        src={getFlagUrl(opponent.id)}
+                                        alt={opponent.name}
+                                        className="w-8 h-5 object-cover rounded shadow-sm border border-slate-950 flex-shrink-0"
+                                      />
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="text-sm font-extrabold text-white truncate">
+                                          {opponent.name}
+                                        </span>
+                                      </div>
+                                      <span className="text-[10px] text-slate-500 font-bold ml-auto font-sports-header">
+                                        #{opponent.rank}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <div className="flex items-center justify-center py-2 w-full text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                      TBD Opponent
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           {/* Dedicated Interactive Prediction Card */}
-                          {stage.isInteractive && contenderA && contenderB && (() => {
+                          {stage.isInteractive && opponentMode === 'predict' && contenderA && contenderB && (() => {
                             const unlocked = isPredictionUnlocked(stage.opponentMatchId!);
                             return (
                               <div className={`flex flex-col gap-3 bg-slate-950/40 border rounded-2xl p-4 sm:p-5 shadow-sm animate-fade-in transition-all duration-300 ${!unlocked
@@ -1216,7 +1324,28 @@ export default function PathToFinal() {
                               </div>
 
                               {/* Bottom Team Row (Opponent) */}
-                              {bottomTeam ? (
+                              {opponentMode === 'possible' && stage.isInteractive && contenderA && contenderB ? (
+                                <div className="flex flex-col items-center justify-center p-1.5 bg-slate-950/30 border border-slate-900 rounded-xl min-h-[38px] text-center">
+                                  <span className="text-[8px] font-black text-[#FFD700] uppercase tracking-wider mb-0.5">
+                                    WINNER OF
+                                  </span>
+                                  <div className="flex items-center justify-center gap-1">
+                                    <img
+                                      src={getFlagUrl(contenderA.id)}
+                                      alt={contenderA.name}
+                                      className="w-4 h-2.5 object-cover rounded shadow-sm border border-slate-950 flex-shrink-0"
+                                    />
+                                    <span className="text-[9px] font-extrabold text-slate-300 truncate max-w-[60px]">{contenderA.name}</span>
+                                    <span className="text-[7px] font-bold text-slate-500 px-0.5">VS</span>
+                                    <img
+                                      src={getFlagUrl(contenderB.id)}
+                                      alt={contenderB.name}
+                                      className="w-4 h-2.5 object-cover rounded shadow-sm border border-slate-950 flex-shrink-0"
+                                    />
+                                    <span className="text-[9px] font-extrabold text-slate-300 truncate max-w-[60px]">{contenderB.name}</span>
+                                  </div>
+                                </div>
+                              ) : bottomTeam ? (
                                 <div className="flex items-center gap-2.5 p-2 rounded-xl border border-transparent bg-slate-950/30 text-slate-500 opacity-45 hover:opacity-60 transition-all">
                                   <img
                                     src={getFlagUrl(bottomTeam.id)}
@@ -1234,7 +1363,7 @@ export default function PathToFinal() {
                             </div>
 
                             {/* Interactive Prediction Panel */}
-                            {stage.isInteractive && contenderA && contenderB && (() => {
+                            {stage.isInteractive && opponentMode === 'predict' && contenderA && contenderB && (() => {
                               const unlocked = isPredictionUnlocked(stage.opponentMatchId!);
                               return (
                                 <div className="mt-3 pt-3 border-t border-slate-900 flex flex-col gap-2 transition-all duration-300">
@@ -1315,7 +1444,7 @@ export default function PathToFinal() {
 
             {/* Bottom Quick Share / Download Bar */}
             <div className="flex items-center justify-center gap-3 pt-6 border-t border-slate-900/80 mt-4 flex-shrink-0">
-              {isPathComplete ? (
+              {canShare ? (
                 <button
                   onClick={() => setIsShareModalOpen(true)}
                   className="flex items-center justify-center gap-1.5 px-4.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/35 text-xs font-bold text-white uppercase tracking-wider transition-all shadow-md hover:shadow-emerald-500/20 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
@@ -1337,7 +1466,8 @@ export default function PathToFinal() {
               )}
             </div>
           </div>
-        ) : (
+        )
+      ) : (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-950/10 select-none animate-fade-in">
             <Trophy className="h-10 w-10 text-[#FFD700] mb-3 opacity-60 animate-pulse" />
             <h3 className="text-sm font-bold text-white uppercase tracking-wider font-sports-header">
@@ -1435,6 +1565,8 @@ export default function PathToFinal() {
               <div className="w-full flex items-center justify-between py-4 px-2 z-10 my-auto">
                 {timelineStages.map((stage, idx) => {
                   const opponent = TEAMS.find((t) => t.id === stage.opponentId);
+                  const contenderA = TEAMS.find((t) => t.id === stage.contenderAId);
+                  const contenderB = TEAMS.find((t) => t.id === stage.contenderBId);
                   const isFinal = stage.stage === 'final';
                   const stageHeaderColor = isFinal ? 'text-[#FFD700]' : 'text-emerald-400';
 
@@ -1487,7 +1619,30 @@ export default function PathToFinal() {
                             VS
                           </div>
 
-                          {bottomTeam ? (
+                          {opponentMode === 'possible' && stage.isInteractive && contenderA && contenderB ? (
+                            <div className="flex flex-col items-center justify-center p-1.5 bg-slate-950/20 border border-slate-800 rounded-lg min-h-[30px] text-center">
+                              <span className="text-[7px] font-black text-[#FFD700] uppercase tracking-wider mb-0.5">
+                                WINNER OF
+                              </span>
+                              <div className="flex items-center justify-center gap-1">
+                                <img
+                                  src={getFlagUrl(contenderA.id) + "?cors"}
+                                  alt=""
+                                  crossOrigin="anonymous"
+                                  className="w-3.5 h-2 object-cover rounded border border-slate-950 flex-shrink-0"
+                                />
+                                <span className="text-[8px] font-extrabold text-slate-300 truncate max-w-[50px]">{contenderA.name}</span>
+                                <span className="text-[6px] font-bold text-slate-500 px-0.5">VS</span>
+                                <img
+                                  src={getFlagUrl(contenderB.id) + "?cors"}
+                                  alt=""
+                                  crossOrigin="anonymous"
+                                  className="w-3.5 h-2 object-cover rounded border border-slate-950 flex-shrink-0"
+                                />
+                                <span className="text-[8px] font-extrabold text-slate-300 truncate max-w-[50px]">{contenderB.name}</span>
+                              </div>
+                            </div>
+                          ) : bottomTeam ? (
                             <div className="flex items-center gap-2 p-1.5 rounded-lg border border-transparent bg-slate-950/20 text-slate-500 opacity-60">
                               <img
                                 src={getFlagUrl(bottomTeam.id) + "?cors"}
@@ -1539,6 +1694,8 @@ export default function PathToFinal() {
 
                 {timelineStages.map((stage) => {
                   const opponent = TEAMS.find((t) => t.id === stage.opponentId);
+                  const contenderA = TEAMS.find((t) => t.id === stage.contenderAId);
+                  const contenderB = TEAMS.find((t) => t.id === stage.contenderBId);
                   return (
                     <div key={stage.matchId} className="relative pl-16 flex items-center">
                       <div className="absolute left-[36px] top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-slate-950 border-2 border-[#FFD700] flex items-center justify-center z-10 shadow-[0_0_8px_rgba(255,215,0,0.4)]">
@@ -1569,9 +1726,30 @@ export default function PathToFinal() {
                           VS
                         </div>
 
-                        <div className="flex items-center justify-end gap-3.5 w-[42%] min-w-0 text-right">
-                          {opponent ? (
+                        <div className="flex flex-col gap-0.5 w-[42%] min-w-0 items-end justify-center">
+                          {opponentMode === 'possible' && stage.isInteractive && contenderA && contenderB ? (
                             <>
+                              <span className="text-[9px] font-black text-[#FFD700] uppercase tracking-wider mb-0.5 pr-1">WINNER OF</span>
+                              <div className="flex items-center gap-1 justify-end w-full flex-wrap">
+                                <img
+                                  src={getFlagUrl(contenderA.id) + "?cors"}
+                                  alt=""
+                                  crossOrigin="anonymous"
+                                  className="w-5 h-3.5 object-cover rounded border border-slate-950 flex-shrink-0 shadow-sm"
+                                />
+                                <span className="text-[10px] font-extrabold text-white truncate max-w-[60px]">{contenderA.name}</span>
+                                <span className="text-[8px] font-black text-slate-500 uppercase px-0.5">vs</span>
+                                <img
+                                  src={getFlagUrl(contenderB.id) + "?cors"}
+                                  alt=""
+                                  crossOrigin="anonymous"
+                                  className="w-5 h-3.5 object-cover rounded border border-slate-950 flex-shrink-0 shadow-sm"
+                                />
+                                <span className="text-[10px] font-extrabold text-white truncate max-w-[60px]">{contenderB.name}</span>
+                              </div>
+                            </>
+                          ) : opponent ? (
+                            <div className="flex items-center justify-end gap-3.5 w-full">
                               <span className="text-base font-black text-white truncate uppercase tracking-wide">{opponent.name}</span>
                               <img
                                 src={getFlagUrl(opponent.id) + "?cors"}
@@ -1579,7 +1757,7 @@ export default function PathToFinal() {
                                 crossOrigin="anonymous"
                                 className="w-10 h-6.5 object-cover rounded border border-slate-950 flex-shrink-0 shadow-sm"
                               />
-                            </>
+                            </div>
                           ) : (
                             <span className="text-xs font-black text-slate-500 uppercase tracking-widest">TBD Opponent</span>
                           )}
