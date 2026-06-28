@@ -7,6 +7,7 @@ import { GROUPS, TEAMS, getFlagUrl, KNOCKOUT_METADATA } from '../data/initialDat
 import { fuzzySearchTeams } from '../utils/fuzzySearch';
 import { parseScenarioText } from '../utils/textFormatter';
 import PathToFinal from './PathToFinal';
+import MatchImpactCalculator from './MatchImpactCalculator';
 
 export default function HomeScreen() {
   const {
@@ -387,7 +388,7 @@ export default function HomeScreen() {
       {/* MATCHUP SCENARIOS & EQUATIONS SEARCH WIDGET */}
       <div 
         ref={widgetRef} 
-        className="w-full max-w-5xl mx-auto glass-panel rounded-3xl p-6 sm:p-8 border-[#FFD700]/15 bg-slate-950/40 shadow-xl flex flex-col gap-6 select-none relative overflow-hidden"
+        className="w-full glass-panel rounded-3xl p-6 sm:p-8 border-[#FFD700]/15 bg-slate-950/40 shadow-xl flex flex-col gap-6 select-none relative overflow-hidden"
       >
         {/* Background radial gold glow */}
         <div className="absolute -right-40 -top-40 w-96 h-96 bg-gradient-to-br from-[#FFD700]/5 to-transparent blur-[100px] rounded-full pointer-events-none -z-10" />
@@ -602,6 +603,9 @@ export default function HomeScreen() {
           </div>
         )}
       </div>
+
+      {/* MATCH IMPACT CALCULATOR */}
+      <MatchImpactCalculator />
 
       {/* PATH TO THE FINAL SIMULATOR */}
       <PathToFinal />

@@ -91,6 +91,8 @@ const calculateGroupStandings = (groupId: string, matches: Match[]): TeamStandin
         if (match.winnerId === team.id) {
           won += 1;
           points += 3;
+        } else if (match.winnerId === 'draw') {
+          points += 1;
         } else {
           lost += 1;
         }
@@ -581,13 +583,18 @@ export const useTournamentStore = create<TournamentState>()(
             }
           });
 
-          // 2. Fetch current group standings
-          const groupsResponse = await fetch('https://worldcup26.ir/get/groups');
-          if (!groupsResponse.ok) {
-            throw new Error(`Failed to fetch group standings: ${groupsResponse.statusText}`);
+          // 2. Fetch current group standings and games in parallel
+          const [groupsResponse, gamesResponse] = await Promise.all([
+            fetch('https://worldcup26.ir/get/groups'),
+            fetch('https://worldcup26.ir/get/games')
+          ]);
+          if (!groupsResponse.ok || !gamesResponse.ok) {
+            throw new Error(`Failed to fetch standings/games: ${groupsResponse.statusText} / ${gamesResponse.statusText}`);
           }
           const groupsData = await groupsResponse.json();
+          const gamesData = await gamesResponse.json();
           const apiGroups: any[] = groupsData.groups || [];
+          const apiGames: any[] = gamesData.games || [];
 
           const apiStandingsRecord: Record<string, TeamStanding[]> = {};
           
@@ -609,29 +616,62 @@ export const useTournamentStore = create<TournamentState>()(
             apiStandingsRecord[groupLetter] = standingsList;
           });
 
-          // Process matches and set winners according to API standings
+          // Process matches and set winners according to API games/ranks
           const { matches } = get();
           const updatedMatches = [...matches];
 
           updatedMatches.forEach((match, idx) => {
             if (match.type === 'group' && match.homeTeamId && match.awayTeamId && match.groupId) {
-              const groupLetter = match.groupId;
-              const groupStandings = apiStandingsRecord[groupLetter] || [];
-              const homeIndex = groupStandings.findIndex(s => s.teamId === match.homeTeamId);
-              const awayIndex = groupStandings.findIndex(s => s.teamId === match.awayTeamId);
+              // Find matching game in API games list
+              const apiMatch = apiGames.find(g => {
+                const homeFifa = apiIdToFifaCode[g.home_team_id];
+                const awayFifa = apiIdToFifaCode[g.away_team_id];
+                return (homeFifa === match.homeTeamId && awayFifa === match.awayTeamId) ||
+                       (homeFifa === match.awayTeamId && awayFifa === match.homeTeamId);
+              });
 
-              if (homeIndex !== -1 && awayIndex !== -1) {
-                // Lower index in array means higher rank/standing
-                const winnerId = homeIndex < awayIndex ? match.homeTeamId : match.awayTeamId;
-                updatedMatches[idx] = {
-                  ...match,
-                  winnerId,
-                };
+              if (apiMatch) {
+                const isFinished = apiMatch.finished === 'TRUE' || apiMatch.finished === true;
+                const isLive = apiMatch.time_elapsed === 'live' || (apiMatch.time_elapsed && apiMatch.time_elapsed !== 'notstarted' && apiMatch.time_elapsed !== 'finished');
+
+                if (isFinished || isLive) {
+                  const hScore = parseInt(apiMatch.home_score, 10) || 0;
+                  const aScore = parseInt(apiMatch.away_score, 10) || 0;
+                  const homeFifa = apiIdToFifaCode[apiMatch.home_team_id];
+                  const awayFifa = apiIdToFifaCode[apiMatch.away_team_id];
+
+                  if (hScore > aScore) {
+                    updatedMatches[idx] = { ...match, winnerId: homeFifa };
+                  } else if (aScore > hScore) {
+                    updatedMatches[idx] = { ...match, winnerId: awayFifa };
+                  } else {
+                    updatedMatches[idx] = { ...match, winnerId: 'draw' };
+                  }
+                } else {
+                  // Not started: Predict based on FIFA rank
+                  const homeObj = TEAMS.find(t => t.id === match.homeTeamId);
+                  const awayObj = TEAMS.find(t => t.id === match.awayTeamId);
+                  if (homeObj && awayObj) {
+                    updatedMatches[idx] = {
+                      ...match,
+                      winnerId: homeObj.rank < awayObj.rank ? match.homeTeamId : match.awayTeamId
+                    };
+                  } else {
+                    updatedMatches[idx] = { ...match, winnerId: undefined };
+                  }
+                }
               } else {
-                updatedMatches[idx] = {
-                  ...match,
-                  winnerId: match.homeTeamId,
-                };
+                // No apiMatch found: Fallback rank
+                const homeObj = TEAMS.find(t => t.id === match.homeTeamId);
+                const awayObj = TEAMS.find(t => t.id === match.awayTeamId);
+                if (homeObj && awayObj) {
+                  updatedMatches[idx] = {
+                    ...match,
+                    winnerId: homeObj.rank < awayObj.rank ? match.homeTeamId : match.awayTeamId
+                  };
+                } else {
+                  updatedMatches[idx] = { ...match, winnerId: undefined };
+                }
               }
             }
           });

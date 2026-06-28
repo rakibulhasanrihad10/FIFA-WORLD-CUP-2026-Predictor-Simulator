@@ -1,12 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useTournamentStore } from '../store/useTournamentStore';
-import { Trophy, RotateCcw } from 'lucide-react';
+import { Trophy, RotateCcw, Table } from 'lucide-react';
 import { TournamentStep } from '../types/tournament';
+import StandingsModal from './StandingsModal';
 
 export default function Header() {
   const { step, setStep, matches, reset } = useTournamentStore();
+  const [isStandingsOpen, setIsStandingsOpen] = useState(false);
   const navRef = React.useRef<HTMLElement>(null);
 
   React.useEffect(() => {
@@ -118,15 +120,24 @@ export default function Header() {
           </div>
 
           {step === 'home' ? (
-            <button
-              onClick={() => {
-                alert("World Cup History page is coming soon!");
-              }}
-              className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#fbbf24]/10 hover:bg-[#fbbf24]/20 text-[#fbbf24] border border-[#fbbf24]/35 hover:border-[#fbbf24]/60 transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(251,191,36,0.05)] active:scale-[0.97]"
-            >
-              <Trophy className="h-3.5 w-3.5 text-[#fbbf24] animate-pulse" />
-              <span>WC History</span>
-            </button>
+            <div className="md:hidden flex items-center gap-2">
+              <button
+                onClick={() => setIsStandingsOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#FFD700]/10 hover:bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/35 hover:border-[#FFD700]/60 transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(255,215,0,0.05)] active:scale-[0.97]"
+              >
+                <Table className="h-3.5 w-3.5 text-[#FFD700] animate-pulse" />
+                <span>Table</span>
+              </button>
+              <button
+                onClick={() => {
+                  alert("World Cup History page is coming soon!");
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#fbbf24]/10 hover:bg-[#fbbf24]/20 text-[#fbbf24] border border-[#fbbf24]/35 hover:border-[#fbbf24]/60 transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(251,191,36,0.05)] active:scale-[0.97]"
+              >
+                <Trophy className="h-3.5 w-3.5 text-[#fbbf24] animate-pulse" />
+                <span>WC History</span>
+              </button>
+            </div>
           ) : (
             <button
               onClick={reset}
@@ -217,6 +228,13 @@ export default function Header() {
         {step === 'home' && (
           <div className="hidden md:flex items-center gap-3">
             <button
+              onClick={() => setIsStandingsOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-[#FFD700]/10 hover:bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/30 hover:border-[#FFD700]/65 transition-all duration-300 cursor-pointer shadow-[0_2px_10px_rgba(255,215,0,0.05)] hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Table className="h-4 w-4 text-[#FFD700] animate-pulse" />
+              <span>Points Table</span>
+            </button>
+            <button
               onClick={() => {
                 alert("World Cup History page is coming soon!");
               }}
@@ -251,6 +269,8 @@ export default function Header() {
           </div>
         </div>
       )}
+      {/* Standings Table Caching Modal */}
+      <StandingsModal isOpen={isStandingsOpen} onClose={() => setIsStandingsOpen(false)} />
     </header>
   );
 }
